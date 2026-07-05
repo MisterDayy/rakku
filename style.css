@@ -79,6 +79,7 @@ h1, h2, .brand-text, .section-title {
   max-width: 40px;
   overflow: hidden;
   cursor: pointer;
+  margin-left: auto;
   transition: max-width 0.3s ease, padding 0.3s ease;
 }
 
@@ -713,7 +714,6 @@ h1, h2, .brand-text, .section-title {
 .splash-screen video {
   width: min(65vw, 320px);
   height: auto;
-  border: 2px solid #9b59d0;
   border-radius: 20px;
   box-shadow: 0 0 50px rgba(155, 89, 208, 0.55), 0 0 100px rgba(155, 89, 208, 0.25);
 }
