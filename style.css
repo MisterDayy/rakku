@@ -668,7 +668,7 @@ h1, h2, .brand-text, .section-title {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: var(--ink);
+  background: #12072d;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -684,8 +684,6 @@ h1, h2, .brand-text, .section-title {
 .splash-screen video {
   width: min(65vw, 320px);
   height: auto;
-  border-radius: 24px;
-  box-shadow: 0 0 40px rgba(201, 162, 75, 0.25);
 }
 
 /* ===== EXP Toast ===== */
