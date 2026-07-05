@@ -44,17 +44,19 @@
 </script>
 
 <header class="topbar">
-  <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu">
-    <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
-  </button>
   <div class="brand">
     <img class="brand-mark" src="assets/logo.jpg" alt="Rakku" />
     <span class="brand-text">Rakku</span>
   </div>
-  <div class="search-box">
-    <svg viewBox="0 0 24 24" width="17" height="17"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14"/></svg>
+  <div class="search-box" id="searchBox">
+    <button class="search-icon-btn" id="searchIconBtn" aria-label="Cari" type="button">
+      <svg viewBox="0 0 24 24" width="17" height="17"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14"/></svg>
+    </button>
     <input type="text" id="searchInput" placeholder="Cari judul manga..." />
   </div>
+  <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu">
+    <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+  </button>
 </header>
 
 <div class="side-menu-overlay" id="sideMenuOverlay"></div>

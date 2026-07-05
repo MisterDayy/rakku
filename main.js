@@ -53,6 +53,7 @@ function setMode(mode) {
   document.querySelectorAll(".side-menu-item").forEach((b) => b.classList.toggle("active", b.dataset.mode === mode));
   document.getElementById("searchInput").placeholder = mode === "manga" ? "Cari judul manga..." : "Cari judul anime...";
   document.getElementById("searchInput").value = "";
+  document.getElementById("searchBox").classList.remove("expanded");
   if (mode === "anime") MangaApp.stopCarousel();
   else { AnimeApp.stopCarousel(); AnimeApp.stopExpTimer(); }
   renderBottomNav();
@@ -271,6 +272,35 @@ document.getElementById("searchInput").addEventListener("keydown", (e) => {
     if (currentMode === "manga") MangaApp.renderSearch(q);
     else AnimeApp.renderSearch(q);
   }
+});
+
+// ===== Search box: icon dulu, expand jadi input pas diklik =====
+const searchBox = document.getElementById("searchBox");
+const searchIconBtn = document.getElementById("searchIconBtn");
+const searchInput = document.getElementById("searchInput");
+
+searchIconBtn.addEventListener("click", () => {
+  if (!searchBox.classList.contains("expanded")) {
+    searchBox.classList.add("expanded");
+    searchInput.focus();
+    return;
+  }
+  const q = searchInput.value.trim();
+  if (q) {
+    if (currentMode === "manga") MangaApp.renderSearch(q);
+    else AnimeApp.renderSearch(q);
+  } else {
+    searchInput.focus();
+  }
+});
+
+searchInput.addEventListener("blur", () => {
+  // delay dikit biar klik tombol icon-nya sendiri gak keburu nutup
+  setTimeout(() => {
+    if (!searchInput.value.trim()) {
+      searchBox.classList.remove("expanded");
+    }
+  }, 150);
 });
 
 // Init
