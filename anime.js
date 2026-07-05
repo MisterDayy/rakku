@@ -674,40 +674,62 @@ const AnimeApp = (function () {
 
       state.detailData = d;
 
+      const episodes = d.episodes || [];
+      const latestEp = episodes[0];
+      const synopsisText = d.synopsis || "Tidak ada sinopsis.";
+      const showSynToggle = synopsisText.length > 200;
+
       app.innerHTML = `
         <div class="back-btn" id="backBtn">&larr; Kembali</div>
-        <div class="detail-hero">
-          <img src="${d.poster}" alt="${d.title}" />
-          <div class="detail-info">
-            <div class="detail-title-row">
-              <h1>${d.title}</h1>
-              <button class="bookmark-btn" id="bookmarkBtn">☆ Simpan</button>
-            </div>
-            <div class="detail-stats">
-              <div class="stat">Status: <b>${d.status || "-"}</b></div>
-              <div class="stat">Tipe: <b>${d.type || "-"}</b></div>
-              <div class="stat">Studio: <b>${d.studio || "-"}</b></div>
-            </div>
-            ${
-              genres.length
-                ? `<div class="genre-tags">${genres.map((g) => `<span class="genre-tag">${g.name}</span>`).join("")}</div>`
-                : ""
-            }
-            <p class="synopsis">${d.synopsis || "Tidak ada sinopsis."}</p>
+
+        <div class="detail-page">
+          <div class="detail-poster-wrap">
+            <img class="detail-poster" src="${d.poster}" alt="${d.title}" />
+          </div>
+
+          <h1 class="detail-title">${d.title}</h1>
+
+          <div class="detail-meta-row">
+            <span class="meta-chip">${d.status || "-"}</span>
+            <span class="meta-chip">${d.type || "-"}</span>
+            <span class="meta-chip">${d.studio || "-"}</span>
+          </div>
+
+          ${
+            genres.length
+              ? `<div class="genre-tags detail-genre-tags">${genres.map((g) => `<span class="genre-tag">${g.name}</span>`).join("")}</div>`
+              : ""
+          }
+
+          <div class="detail-actions">
+            <button class="bookmark-btn" id="bookmarkBtn">☆ Simpan</button>
+            ${latestEp ? `<button class="watch-btn" id="watchLatestBtn">▶ Tonton Episode Terbaru</button>` : ""}
+          </div>
+
+          <div class="synopsis-card">
+            <div class="synopsis-label">Sinopsis</div>
+            <p class="synopsis" id="synopsisText">${synopsisText}</p>
+            ${showSynToggle ? `<button class="synopsis-toggle" id="synopsisToggle">Baca selengkapnya</button>` : ""}
           </div>
         </div>
-        <div class="section-title"><span class="st-bar"></span>Daftar Episode</div>
+
+        <div class="section-title episode-section-title">
+          <span class="st-bar"></span>Daftar Episode
+          <span class="episode-count">${episodes.length} Episode</span>
+        </div>
         <div class="chapter-list" id="episodeList">
-          ${
-            (d.episodes || [])
-              .map(
-                (ep) => `
+          ${episodes
+            .map(
+              (ep, i) => `
             <div class="chapter-item" data-slug="${encodeURIComponent(ep.slug)}">
-              <span class="cname">${ep.name}</span>
+              <div class="chapter-item-left">
+                <span class="chapter-badge">${episodes.length - i}</span>
+                <span class="cname">${ep.name}</span>
+              </div>
+              <svg class="chapter-chevron" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M9 6l6 6-6 6"/></svg>
             </div>`
-              )
-              .join("")
-          }
+            )
+            .join("")}
         </div>
       `;
 
@@ -719,6 +741,21 @@ const AnimeApp = (function () {
           openPlayer(slug, name);
         });
       });
+
+      if (latestEp) {
+        document.getElementById("watchLatestBtn")?.addEventListener("click", () => {
+          openPlayer(latestEp.slug, latestEp.name);
+        });
+      }
+
+      if (showSynToggle) {
+        const synBtn = document.getElementById("synopsisToggle");
+        const synText = document.getElementById("synopsisText");
+        synBtn.addEventListener("click", () => {
+          synText.classList.toggle("expanded");
+          synBtn.textContent = synText.classList.contains("expanded") ? "Tutup" : "Baca selengkapnya";
+        });
+      }
 
       setupBookmarkButton(slug, d.title, d.poster);
     } catch (err) {
