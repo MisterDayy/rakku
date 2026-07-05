@@ -7,6 +7,8 @@ const AnimeApp = (function () {
     detailData: null,
     genreList: [],
     activeGenreSlug: "",
+    jadwalData: null,
+    jadwalDay: "",
   };
 
   const CONTENT_TYPE = "anime";
@@ -478,7 +480,44 @@ const AnimeApp = (function () {
     return labels[key] || key;
   }
 
-  async function renderJadwal() {
+  function jadwalItemHTML(item) {
+    const safeTitle = item.title || "Tanpa Judul";
+    const info = [item.episode, item.status_or_day].filter(Boolean).join(" • ");
+    return `
+      <div class="hist-item" data-slug="${encodeURIComponent(item.slug)}">
+        <img src="${item.poster}" alt="${safeTitle}" onerror="this.src='https://via.placeholder.com/80x110?text=No+Image'" />
+        <div class="hist-info">
+          <div class="hist-title">${safeTitle}</div>
+          <div class="hist-chapter">${info || "-"}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderJadwalList(dayKey) {
+    const schedule = state.jadwalData || {};
+    const items = (schedule[dayKey] || []).filter((item) => !hasBlockedGenre(item.genres));
+    const listWrap = document.getElementById("jadwalList");
+    if (!listWrap) return;
+
+    if (!items.length) {
+      listWrap.className = "";
+      listWrap.innerHTML = emptyBlock("Tidak ada anime untuk hari ini.");
+      return;
+    }
+
+    listWrap.className = "hist-list";
+    listWrap.innerHTML = items.map(jadwalItemHTML).join("");
+
+    listWrap.querySelectorAll(".hist-item[data-slug]").forEach((el) => {
+      el.addEventListener("click", () => {
+        const slug = decodeURIComponent(el.dataset.slug);
+        goToDetail(slug);
+      });
+    });
+  }
+
+  async function renderJadwal(dayKey) {
     clearCarouselInterval();
     stopExpTimer();
     state.page = "jadwal";
@@ -486,35 +525,51 @@ const AnimeApp = (function () {
 
     app.innerHTML = `
       <div class="section-title"><span class="st-bar"></span>Jadwal Rilis Anime</div>
-      <div id="jadwalWrap">${loadingBlock("Memuat jadwal...")}</div>
+      <div class="genre-bar" id="jadwalTabBar">${loadingBlock("Memuat jadwal...")}</div>
+      <div id="jadwalList"></div>
     `;
 
     try {
-      const json = await fetchJSON(ANIME_ENDPOINTS.schedule());
-      const schedule = json.schedule || {};
-
+      if (!state.jadwalData) {
+        const json = await fetchJSON(ANIME_ENDPOINTS.schedule());
+        state.jadwalData = json.schedule || {};
+      }
+      const schedule = state.jadwalData;
       const orderedKeys = DAY_ORDER.filter((k) => Array.isArray(schedule[k]) && schedule[k].length);
 
       if (!orderedKeys.length) {
-        document.getElementById("jadwalWrap").innerHTML = emptyBlock("Tidak ada data jadwal saat ini.");
+        document.getElementById("jadwalTabBar").innerHTML = "";
+        document.getElementById("jadwalList").innerHTML = emptyBlock("Tidak ada data jadwal saat ini.");
         return;
       }
 
-      const wrap = document.getElementById("jadwalWrap");
-      wrap.innerHTML = orderedKeys
-        .map((key) => {
-          const items = schedule[key].filter((item) => !hasBlockedGenre(item.genres));
-          if (!items.length) return "";
-          return `
-        <div class="section-title jadwal-day-title"><span class="st-bar"></span>${dayLabel(key)}</div>
-        <div class="grid">${items.map(cardHTML).join("")}</div>
-      `;
-        })
+      const activeKey = orderedKeys.includes(dayKey)
+        ? dayKey
+        : orderedKeys.includes(state.jadwalDay)
+        ? state.jadwalDay
+        : orderedKeys[0];
+      state.jadwalDay = activeKey;
+
+      const tabBar = document.getElementById("jadwalTabBar");
+      tabBar.className = "genre-bar";
+      tabBar.innerHTML = orderedKeys
+        .map((k) => `<div class="genre-chip ${k === activeKey ? "active" : ""}" data-day="${k}">${dayLabel(k)}</div>`)
         .join("");
 
-      attachCardListeners();
+      tabBar.querySelectorAll(".genre-chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const key = chip.dataset.day;
+          if (key === state.jadwalDay) return;
+          state.jadwalDay = key;
+          tabBar.querySelectorAll(".genre-chip").forEach((c) => c.classList.toggle("active", c === chip));
+          renderJadwalList(key);
+        });
+      });
+
+      renderJadwalList(activeKey);
     } catch (err) {
-      document.getElementById("jadwalWrap").innerHTML = emptyBlock("Gagal memuat jadwal: " + err.message);
+      document.getElementById("jadwalTabBar").innerHTML = "";
+      document.getElementById("jadwalList").innerHTML = emptyBlock("Gagal memuat jadwal: " + err.message);
     }
   }
 
