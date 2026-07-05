@@ -286,7 +286,7 @@ document.querySelectorAll(".side-menu-sub-item").forEach((btn) => {
     setAnimeSubActive(page);
 
     if (page === "home") AnimeApp.renderHome();
-    else if (page === "genre") AnimeApp.renderGenre();
+    else if (page === "jelajah") AnimeApp.renderJelajah();
     else if (page === "jadwal") AnimeApp.renderJadwal();
 
     closeSideMenu();

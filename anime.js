@@ -324,6 +324,79 @@ const AnimeApp = (function () {
     });
   }
 
+  const JELAJAH_TABS = [
+    { key: "ongoing", label: "Ongoing", endpoint: (p) => ANIME_ENDPOINTS.ongoing(p) },
+    { key: "completed", label: "Completed", endpoint: (p) => ANIME_ENDPOINTS.completed(p) },
+    { key: "movie", label: "Movie", endpoint: (p) => ANIME_ENDPOINTS.movies(p) },
+    { key: "terbaru", label: "Terbaru", endpoint: (p) => ANIME_ENDPOINTS.latest(p) },
+  ];
+
+  async function renderJelajah(tabKey, page) {
+    clearCarouselInterval();
+    stopExpTimer();
+    state.page = "jelajah";
+    setActiveNav("");
+
+    const activeKey = tabKey || state.jelajahTab || "ongoing";
+    const activePage = page || 1;
+    state.jelajahTab = activeKey;
+    state.jelajahPage = activePage;
+
+    const tab = JELAJAH_TABS.find((t) => t.key === activeKey) || JELAJAH_TABS[0];
+
+    app.innerHTML = `
+      <div class="section-title"><span class="st-bar"></span>Jelajah Anime</div>
+      <div class="genre-bar" id="jelajahTabBar">
+        ${JELAJAH_TABS.map(
+          (t) => `<div class="genre-chip ${t.key === activeKey ? "active" : ""}" data-tab="${t.key}">${t.label}</div>`
+        ).join("")}
+      </div>
+      <div id="jelajahGrid">${loadingBlock("Memuat " + tab.label + "...")}</div>
+      <div class="jelajah-pagination" id="jelajahPagination"></div>
+    `;
+
+    document.querySelectorAll("#jelajahTabBar .genre-chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const key = chip.dataset.tab;
+        if (key === activeKey) return;
+        renderJelajah(key, 1);
+      });
+    });
+
+    const grid = document.getElementById("jelajahGrid");
+    const pagWrap = document.getElementById("jelajahPagination");
+
+    try {
+      const json = await fetchJSON(tab.endpoint(activePage));
+      const data = (json.animes || []).filter((item) => !hasBlockedGenre(item.genres));
+
+      if (!data.length) {
+        grid.innerHTML = emptyBlock("Tidak ada data " + tab.label + ".");
+      } else {
+        grid.className = "grid";
+        grid.innerHTML = data.map(cardHTML).join("");
+        attachCardListeners();
+      }
+
+      const pag = json.pagination || {};
+      const curPage = pag.currentPage || activePage;
+      pagWrap.innerHTML = `
+        <button class="jelajah-page-btn" id="jelajahPrev" ${pag.hasPrev ? "" : "disabled"}>&larr; Sebelumnya</button>
+        <span class="jelajah-page-info">Hal ${curPage}</span>
+        <button class="jelajah-page-btn" id="jelajahNext" ${pag.hasNext ? "" : "disabled"}>Selanjutnya &rarr;</button>
+      `;
+      document.getElementById("jelajahPrev")?.addEventListener("click", () => {
+        if (pag.hasPrev) renderJelajah(activeKey, curPage - 1);
+      });
+      document.getElementById("jelajahNext")?.addEventListener("click", () => {
+        if (pag.hasNext) renderJelajah(activeKey, curPage + 1);
+      });
+    } catch (err) {
+      grid.innerHTML = emptyBlock("Gagal memuat data: " + err.message);
+      pagWrap.innerHTML = "";
+    }
+  }
+
   async function renderGenre() {
     clearCarouselInterval();
     stopExpTimer();
@@ -779,6 +852,7 @@ const AnimeApp = (function () {
   return {
     renderHome,
     renderGenre,
+    renderJelajah,
     renderJadwal,
     renderRiwayat,
     renderSearch,

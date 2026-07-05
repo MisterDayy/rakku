@@ -15,4 +15,8 @@ const ANIME_ENDPOINTS = {
   genres: () => `/api/anime/genres`,
   genre: (slug) => `/api/anime/genres?slug=${encodeURIComponent(slug)}`,
   schedule: () => `/api/anime/schedule`,
+  ongoing: (page) => `/api/anime/ongoing${page ? `?page=${page}` : ""}`,
+  completed: (page) => `/api/anime/completed${page ? `?page=${page}` : ""}`,
+  movies: (page) => `/api/anime/movies${page ? `?page=${page}` : ""}`,
+  latest: (page) => `/api/anime/latest${page ? `?page=${page}` : ""}`,
 };

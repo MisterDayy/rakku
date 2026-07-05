@@ -185,6 +185,43 @@ h1, h2, .brand-text, .section-title {
   margin-top: 26px;
 }
 
+.jelajah-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.jelajah-page-btn {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--paper);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, opacity 0.15s;
+}
+
+.jelajah-page-btn:hover:not(:disabled) {
+  background: rgba(212,175,55,0.1);
+  color: var(--gold);
+}
+
+.jelajah-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.jelajah-page-info {
+  font-size: 13px;
+  color: var(--paper-dim);
+  font-weight: 600;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
