@@ -606,6 +606,19 @@ h1, h2, .brand-text, .section-title {
   min-width: 0;
 }
 
+.chapter-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.chapter-text .cname {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .chapter-item-left .cname {
   overflow: hidden;
   text-overflow: ellipsis;

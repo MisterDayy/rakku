@@ -552,41 +552,65 @@ const MangaApp = (function () {
       state.detailData = d;
 
       const genres = d.genre || d.genres || [];
+      const chapters = d.chapters || [];
+      const latestCh = chapters[0];
+      const synopsisText = d.synopsis || "Tidak ada sinopsis.";
+      const showSynToggle = synopsisText.length > 200;
+      const chapterCount = d.totalChapters ?? chapters.length ?? "-";
 
       app.innerHTML = `
         <div class="back-btn" id="backBtn">&larr; Kembali</div>
-        <div class="detail-hero">
-          <img src="${d.thumb}" alt="${d.title}" />
-          <div class="detail-info">
-            <div class="detail-title-row">
-              <h1>${d.title}</h1>
-              <button class="bookmark-btn" id="bookmarkBtn">☆ Simpan</button>
-            </div>
-            <div class="detail-stats">
-              <div class="stat">Chapter: <b>${d.totalChapters ?? d.chapters?.length ?? "-"}</b></div>
-              ${d.status ? `<div class="stat">Status: <b>${d.status}</b></div>` : ""}
-            </div>
-            ${
-              genres.length
-                ? `<div class="genre-tags">${genres.map((g) => `<span class="genre-tag">${g}</span>`).join("")}</div>`
-                : ""
-            }
-            <p class="synopsis">${d.synopsis || "Tidak ada sinopsis."}</p>
+
+        <div class="detail-page">
+          <div class="detail-poster-wrap">
+            <img class="detail-poster" src="${d.thumb}" alt="${d.title}" />
+          </div>
+
+          <h1 class="detail-title">${d.title}</h1>
+
+          <div class="detail-meta-row">
+            <span class="meta-chip">Chapter: ${chapterCount}</span>
+            ${d.status ? `<span class="meta-chip">${d.status}</span>` : ""}
+          </div>
+
+          ${
+            genres.length
+              ? `<div class="genre-tags detail-genre-tags">${genres.map((g) => `<span class="genre-tag">${g}</span>`).join("")}</div>`
+              : ""
+          }
+
+          <div class="detail-actions">
+            <button class="bookmark-btn" id="bookmarkBtn">☆ Simpan</button>
+            ${latestCh ? `<button class="watch-btn" id="readLatestBtn">📖 Baca Chapter Terbaru</button>` : ""}
+          </div>
+
+          <div class="synopsis-card">
+            <div class="synopsis-label">Sinopsis</div>
+            <p class="synopsis" id="synopsisText">${synopsisText}</p>
+            ${showSynToggle ? `<button class="synopsis-toggle" id="synopsisToggle">Baca selengkapnya</button>` : ""}
           </div>
         </div>
-        <div class="section-title"><span class="st-bar"></span>Daftar Chapter</div>
+
+        <div class="section-title episode-section-title">
+          <span class="st-bar"></span>Daftar Chapter
+          <span class="episode-count">${chapters.length} Chapter</span>
+        </div>
         <div class="chapter-list" id="chapterList">
-          ${
-            (d.chapters || [])
-              .map(
-                (ch) => `
+          ${chapters
+            .map(
+              (ch, i) => `
             <div class="chapter-item" data-href="${encodeURIComponent(ch.link)}" data-name="${encodeURIComponent(ch.name)}">
-              <span class="cname">${ch.name}</span>
-              <span class="cdate">${ch.date || ""}</span>
+              <div class="chapter-item-left">
+                <span class="chapter-badge">${chapters.length - i}</span>
+                <div class="chapter-text">
+                  <span class="cname">${ch.name}</span>
+                  ${ch.date ? `<span class="cdate">${ch.date}</span>` : ""}
+                </div>
+              </div>
+              <svg class="chapter-chevron" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M9 6l6 6-6 6"/></svg>
             </div>`
-              )
-              .join("")
-          }
+            )
+            .join("")}
         </div>
       `;
 
@@ -598,6 +622,21 @@ const MangaApp = (function () {
           openReader(link, name);
         });
       });
+
+      if (latestCh) {
+        document.getElementById("readLatestBtn")?.addEventListener("click", () => {
+          openReader(latestCh.link, latestCh.name);
+        });
+      }
+
+      if (showSynToggle) {
+        const synBtn = document.getElementById("synopsisToggle");
+        const synText = document.getElementById("synopsisText");
+        synBtn.addEventListener("click", () => {
+          synText.classList.toggle("expanded");
+          synBtn.textContent = synText.classList.contains("expanded") ? "Tutup" : "Baca selengkapnya";
+        });
+      }
 
       setupBookmarkButton(href, d.title, d.thumb);
     } catch (err) {
