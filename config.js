@@ -14,4 +14,5 @@ const ANIME_ENDPOINTS = {
   episode: (slug) => `/api/anime/episode?slug=${encodeURIComponent(slug)}`,
   genres: () => `/api/anime/genres`,
   genre: (slug) => `/api/anime/genres?slug=${encodeURIComponent(slug)}`,
+  schedule: () => `/api/anime/schedule`,
 };

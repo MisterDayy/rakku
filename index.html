@@ -68,10 +68,16 @@
     <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M4 4h9a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4zm11 3a3 3 0 0 1 3-3h2v14h-3a2 2 0 0 0-2 2z"/></svg>
     Baca Manga
   </button>
-  <button class="side-menu-item" data-mode="anime">
+  <button class="side-menu-item side-menu-parent" data-mode="anime" id="animeMenuToggle">
     <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-6l2 3H8l2-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1m4.5 3.5v6l5-3z"/></svg>
-    Nonton Anime
+    <span class="side-menu-label">Nonton Anime</span>
+    <svg class="side-menu-chevron" id="animeChevron" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg>
   </button>
+  <div class="side-menu-sub" id="animeSubMenu">
+    <button class="side-menu-sub-item" data-anime-page="home">Home</button>
+    <button class="side-menu-sub-item" data-anime-page="genre">Jelajah</button>
+    <button class="side-menu-sub-item" data-anime-page="jadwal">Jadwal</button>
+  </div>
 </nav>
 
 <main class="container" id="app"></main>

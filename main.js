@@ -243,6 +243,10 @@ function closeSideMenu() {
   document.getElementById("sideMenuOverlay").classList.remove("open");
 }
 
+function setAnimeSubActive(page) {
+  document.querySelectorAll(".side-menu-sub-item").forEach((b) => b.classList.toggle("active", b.dataset.animePage === page));
+}
+
 function switchMode(mode) {
   if (mode === currentMode) {
     closeSideMenu();
@@ -261,8 +265,32 @@ document.getElementById("hamburgerBtn").addEventListener("click", () => {
 
 document.getElementById("sideMenuOverlay").addEventListener("click", closeSideMenu);
 
-document.querySelectorAll(".side-menu-item").forEach((btn) => {
+document.querySelectorAll(".side-menu-item:not(.side-menu-parent)").forEach((btn) => {
   btn.addEventListener("click", () => switchMode(btn.dataset.mode));
+});
+
+// ===== Dropdown "Nonton Anime": toggle buka/tutup, sub-item baru pindah mode =====
+const animeMenuToggle = document.getElementById("animeMenuToggle");
+const animeSubMenu = document.getElementById("animeSubMenu");
+
+animeMenuToggle.addEventListener("click", () => {
+  animeSubMenu.classList.toggle("open");
+  animeMenuToggle.classList.toggle("expanded");
+});
+
+document.querySelectorAll(".side-menu-sub-item").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const page = btn.dataset.animePage;
+    if (currentMode !== "anime") setMode("anime");
+    document.querySelectorAll(".side-menu-item[data-mode]").forEach((b) => b.classList.toggle("active", b.dataset.mode === "anime"));
+    setAnimeSubActive(page);
+
+    if (page === "home") AnimeApp.renderHome();
+    else if (page === "genre") AnimeApp.renderGenre();
+    else if (page === "jadwal") AnimeApp.renderJadwal();
+
+    closeSideMenu();
+  });
 });
 
 document.getElementById("searchInput").addEventListener("keydown", (e) => {

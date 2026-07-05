@@ -389,6 +389,62 @@ const AnimeApp = (function () {
     }
   }
 
+  const DAY_ORDER = ["minggu", "senin", "selasa", "rabu", "kamis", "jum'at", "sabtu", "random"];
+
+  function dayLabel(key) {
+    const labels = {
+      minggu: "Minggu",
+      senin: "Senin",
+      selasa: "Selasa",
+      rabu: "Rabu",
+      kamis: "Kamis",
+      "jum'at": "Jumat",
+      sabtu: "Sabtu",
+      random: "Lainnya",
+    };
+    return labels[key] || key;
+  }
+
+  async function renderJadwal() {
+    clearCarouselInterval();
+    stopExpTimer();
+    state.page = "jadwal";
+    setActiveNav("");
+
+    app.innerHTML = `
+      <div class="section-title"><span class="st-bar"></span>Jadwal Rilis Anime</div>
+      <div id="jadwalWrap">${loadingBlock("Memuat jadwal...")}</div>
+    `;
+
+    try {
+      const json = await fetchJSON(ANIME_ENDPOINTS.schedule());
+      const schedule = json.schedule || {};
+
+      const orderedKeys = DAY_ORDER.filter((k) => Array.isArray(schedule[k]) && schedule[k].length);
+
+      if (!orderedKeys.length) {
+        document.getElementById("jadwalWrap").innerHTML = emptyBlock("Tidak ada data jadwal saat ini.");
+        return;
+      }
+
+      const wrap = document.getElementById("jadwalWrap");
+      wrap.innerHTML = orderedKeys
+        .map((key) => {
+          const items = schedule[key].filter((item) => !hasBlockedGenre(item.genres));
+          if (!items.length) return "";
+          return `
+        <div class="section-title jadwal-day-title"><span class="st-bar"></span>${dayLabel(key)}</div>
+        <div class="grid">${items.map(cardHTML).join("")}</div>
+      `;
+        })
+        .join("");
+
+      attachCardListeners();
+    } catch (err) {
+      document.getElementById("jadwalWrap").innerHTML = emptyBlock("Gagal memuat jadwal: " + err.message);
+    }
+  }
+
   async function renderHome() {
     stopExpTimer();
     state.page = "home";
@@ -723,6 +779,7 @@ const AnimeApp = (function () {
   return {
     renderHome,
     renderGenre,
+    renderJadwal,
     renderRiwayat,
     renderSearch,
     clearHistory,
