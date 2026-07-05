@@ -551,7 +551,7 @@ const AnimeApp = (function () {
       state.jadwalDay = activeKey;
 
       const tabBar = document.getElementById("jadwalTabBar");
-      tabBar.className = "genre-bar";
+      tabBar.className = "genre-bar tab-scroll";
       tabBar.innerHTML = orderedKeys
         .map((k) => `<div class="genre-chip ${k === activeKey ? "active" : ""}" data-day="${k}">${dayLabel(k)}</div>`)
         .join("");

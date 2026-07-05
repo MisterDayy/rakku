@@ -310,6 +310,23 @@ h1, h2, .brand-text, .section-title {
   border-color: var(--gold);
 }
 
+.tab-scroll {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.tab-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-scroll .genre-chip {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .genre-tags {
   display: flex;
   flex-wrap: wrap;
