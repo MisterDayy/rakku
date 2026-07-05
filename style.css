@@ -668,6 +668,28 @@ h1, h2, .brand-text, .section-title {
   margin-bottom: 18px;
 }
 
+/* ===== EXP Toast ===== */
+.exp-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 90px;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--gold);
+  color: #1a1a1a;
+  font-weight: 800;
+  font-size: 13.5px;
+  padding: 9px 18px;
+  border-radius: 20px;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 999;
+  pointer-events: none;
+}
+.exp-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 @media (min-width: 640px) {
   .topbar { padding: 16px 32px; }
   .container { padding: 24px 32px 16px; }

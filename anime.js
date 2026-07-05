@@ -145,6 +145,64 @@ const AnimeApp = (function () {
     carouselInterval = null;
   }
 
+  // ===== EXP nonton: per episode dibuka + per menit ditonton =====
+  const EXP_PER_EPISODE_OPEN = 10;
+  const EXP_PER_MINUTE = 2;
+  const EXP_MAX_MINUTES_PER_SESSION = 10;
+
+  let expTimer = null;
+  let expMinuteCount = 0;
+
+  function stopExpTimer() {
+    if (expTimer) clearInterval(expTimer);
+    expTimer = null;
+    expMinuteCount = 0;
+  }
+
+  function showExpToast(amount) {
+    const el = document.createElement("div");
+    el.className = "exp-toast";
+    el.textContent = `+${amount} EXP`;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add("show"));
+    setTimeout(() => {
+      el.classList.remove("show");
+      setTimeout(() => el.remove(), 300);
+    }, 1800);
+  }
+
+  async function awardExp(eventKey, amount) {
+    try {
+      const { data, error } = await supabaseClient.rpc("award_exp_once", {
+        p_event_key: eventKey,
+        p_amount: amount,
+      });
+      if (error) {
+        console.error("Gagal kasih EXP:", error.message);
+        return false;
+      }
+      if (data === true) showExpToast(amount);
+      return data === true;
+    } catch (err) {
+      console.error("Gagal kasih EXP:", err.message);
+      return false;
+    }
+  }
+
+  function startExpTimer(animeSlug, episodeSlug) {
+    stopExpTimer();
+    expTimer = setInterval(() => {
+      if (document.hidden) return; // tab tidak aktif, jangan hitung menit ini
+      if (expMinuteCount >= EXP_MAX_MINUTES_PER_SESSION) {
+        stopExpTimer();
+        return;
+      }
+      const key = `anime_minute:${animeSlug}:${episodeSlug}:${expMinuteCount}`;
+      expMinuteCount++;
+      awardExp(key, EXP_PER_MINUTE);
+    }, 60000);
+  }
+
   function carouselSlideHTML(item) {
     const safeTitle = item.title || "Tanpa Judul";
     return `
@@ -268,6 +326,7 @@ const AnimeApp = (function () {
 
   async function renderGenre() {
     clearCarouselInterval();
+    stopExpTimer();
     state.page = "genre";
     setActiveNav("genre");
 
@@ -331,6 +390,7 @@ const AnimeApp = (function () {
   }
 
   async function renderHome() {
+    stopExpTimer();
     state.page = "home";
     setActiveNav("home");
     app.innerHTML = `
@@ -378,6 +438,7 @@ const AnimeApp = (function () {
 
   async function renderSearch(query) {
     clearCarouselInterval();
+    stopExpTimer();
     state.page = "search";
     setActiveNav("");
     app.innerHTML = `
@@ -406,6 +467,7 @@ const AnimeApp = (function () {
 
   async function goToDetail(slug) {
     clearCarouselInterval();
+    stopExpTimer();
     state.page = "detail";
     state.detailSlug = slug;
     setActiveNav("");
@@ -516,6 +578,7 @@ const AnimeApp = (function () {
 
   async function openPlayer(slug, episodeName) {
     clearCarouselInterval();
+    stopExpTimer();
     state.page = "player";
     setActiveNav("");
     app.innerHTML = `<div class="back-btn" id="backBtn">&larr; Kembali ke daftar episode</div>${loadingBlock("Memuat link streaming...")}`;
@@ -540,6 +603,11 @@ const AnimeApp = (function () {
           title: d.title,
           poster: d.poster,
         });
+      }
+
+      if (AuthApp.getCachedUser()) {
+        awardExp(`anime_open:${state.detailSlug}:${slug}`, EXP_PER_EPISODE_OPEN);
+        startExpTimer(state.detailSlug, slug);
       }
 
       const { prev, next } = getEpisodeNeighbors(slug);
@@ -585,6 +653,7 @@ const AnimeApp = (function () {
 
   async function renderRiwayat() {
     clearCarouselInterval();
+    stopExpTimer();
     state.page = "riwayat";
     setActiveNav("riwayat");
 
@@ -627,6 +696,7 @@ const AnimeApp = (function () {
 
   async function continueWatching(slug, episodeSlug, episodeName) {
     clearCarouselInterval();
+    stopExpTimer();
     state.page = "detail";
     state.detailSlug = slug;
     setActiveNav("");
@@ -658,6 +728,7 @@ const AnimeApp = (function () {
     clearHistory,
     getHistoryCount,
     stopCarousel: clearCarouselInterval,
+    stopExpTimer,
     goToDetail,
   };
 })();

@@ -54,7 +54,7 @@ function setMode(mode) {
   document.getElementById("searchInput").placeholder = mode === "manga" ? "Cari judul manga..." : "Cari judul anime...";
   document.getElementById("searchInput").value = "";
   if (mode === "anime") MangaApp.stopCarousel();
-  else AnimeApp.stopCarousel();
+  else { AnimeApp.stopCarousel(); AnimeApp.stopExpTimer(); }
   renderBottomNav();
 }
 
@@ -67,6 +67,7 @@ window.openContentDetail = function (type, refId) {
 async function renderProfile() {
   MangaApp.stopCarousel();
   AnimeApp.stopCarousel();
+  AnimeApp.stopExpTimer();
   if (window.setBottomNavActive) window.setBottomNavActive("profile");
 
   const app = document.getElementById("app");
