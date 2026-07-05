@@ -5,7 +5,45 @@ const AnimeApp = (function () {
     page: "home",
     detailSlug: "",
     detailData: null,
+    genreList: [],
+    activeGenreSlug: "",
   };
+
+  const HISTORY_KEY = "rakku_anime_history";
+
+  function getHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function pushHistory(entry) {
+    let hist = getHistory().filter((h) => h.slug !== entry.slug);
+    hist.unshift(entry);
+    hist = hist.slice(0, 40);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
+  }
+
+  function clearHistory() {
+    localStorage.removeItem(HISTORY_KEY);
+  }
+
+  function getHistoryCount() {
+    return getHistory().length;
+  }
+
+  // Beberapa endpoint anime punya bentuk response yang tidak seragam,
+  // jadi kita coba beberapa nama field yang umum sebelum fallback ke array pertama yang ketemu.
+  function extractArray(json, keys) {
+    for (const k of keys) {
+      if (Array.isArray(json?.[k])) return json[k];
+    }
+    if (json && typeof json === "object") {
+      for (const k in json) {
+        if (Array.isArray(json[k])) return json[k];
+      }
+    }
+    return [];
+  }
 
   function setActiveNav(page) {
     if (window.setBottomNavActive) window.setBottomNavActive(page);
@@ -51,6 +89,68 @@ const AnimeApp = (function () {
         goToDetail(slug);
       });
     });
+  }
+
+  async function renderGenre() {
+    state.page = "genre";
+    setActiveNav("genre");
+
+    app.innerHTML = `
+      <div class="section-title"><span class="st-bar"></span>Jelajahi Genre</div>
+      <div id="genreBar">${loadingBlock("Memuat daftar genre...")}</div>
+      <div id="genreGrid"></div>
+    `;
+
+    try {
+      if (!state.genreList.length) {
+        const json = await fetchJSON(ANIME_ENDPOINTS.genres());
+        state.genreList = extractArray(json, ["genres", "data", "list"]);
+      }
+
+      const bar = document.getElementById("genreBar");
+      bar.className = "genre-bar";
+      bar.innerHTML = state.genreList
+        .map((g) => {
+          const slug = g.slug || g.id || g.name;
+          const name = g.name || g.title || slug;
+          return `<div class="genre-chip" data-slug="${encodeURIComponent(slug)}" data-name="${name}">${name}</div>`;
+        })
+        .join("");
+
+      document.getElementById("genreGrid").innerHTML = emptyBlock("Pilih salah satu genre di atas untuk melihat anime.");
+
+      document.querySelectorAll("#genreBar .genre-chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          document.querySelectorAll("#genreBar .genre-chip").forEach((c) => c.classList.remove("active"));
+          chip.classList.add("active");
+          loadGenreResults(decodeURIComponent(chip.dataset.slug), chip.dataset.name);
+        });
+      });
+    } catch (err) {
+      document.getElementById("genreBar").innerHTML = emptyBlock("Gagal memuat daftar genre: " + err.message);
+    }
+  }
+
+  async function loadGenreResults(slug, name) {
+    state.activeGenreSlug = slug;
+    const grid = document.getElementById("genreGrid");
+    grid.innerHTML = loadingBlock("Memuat anime genre " + name + "...");
+
+    try {
+      const json = await fetchJSON(ANIME_ENDPOINTS.genre(slug));
+      const data = extractArray(json, ["anime", "animeList", "data", "recent", "result", "list"]);
+
+      if (!data.length) {
+        grid.innerHTML = emptyBlock("Tidak ditemukan anime untuk genre " + name + ".");
+        return;
+      }
+
+      grid.className = "grid";
+      grid.innerHTML = data.map(cardHTML).join("");
+      attachCardListeners();
+    } catch (err) {
+      grid.innerHTML = emptyBlock("Gagal memuat data: " + err.message);
+    }
   }
 
   async function renderHome() {
@@ -198,6 +298,17 @@ const AnimeApp = (function () {
         return;
       }
 
+      const d = state.detailData;
+      if (d) {
+        pushHistory({
+          slug: state.detailSlug,
+          episodeSlug: slug,
+          episodeName: json.title || episodeName,
+          title: d.title,
+          poster: d.poster,
+        });
+      }
+
       const { prev, next } = getEpisodeNeighbors(slug);
 
       app.innerHTML = `
@@ -239,5 +350,61 @@ const AnimeApp = (function () {
     }
   }
 
-  return { renderHome, renderSearch };
+  function renderRiwayat() {
+    state.page = "riwayat";
+    setActiveNav("riwayat");
+
+    const hist = getHistory();
+    app.innerHTML = `<div class="section-title"><span class="st-bar"></span>Riwayat Tonton</div><div id="histGrid"></div>`;
+    const grid = document.getElementById("histGrid");
+
+    if (!hist.length) {
+      grid.innerHTML = emptyBlock("Belum ada riwayat tonton.");
+      return;
+    }
+
+    grid.className = "hist-list";
+    grid.innerHTML = hist
+      .map(
+        (h) => `
+      <div class="hist-item" data-slug="${encodeURIComponent(h.slug)}" data-episode-slug="${encodeURIComponent(h.episodeSlug || "")}" data-episode-name="${encodeURIComponent(h.episodeName || "")}">
+        <img src="${h.poster || ""}" alt="${h.title}" onerror="this.src='https://via.placeholder.com/80x110?text=No+Image'" />
+        <div class="hist-info">
+          <div class="hist-title">${h.title}</div>
+          <div class="hist-chapter">Terakhir ditonton: ${h.episodeName}</div>
+        </div>
+      </div>`
+      )
+      .join("");
+
+    document.querySelectorAll(".hist-item[data-slug]").forEach((item) => {
+      item.addEventListener("click", () => {
+        const slug = decodeURIComponent(item.dataset.slug);
+        const episodeSlug = item.dataset.episodeSlug ? decodeURIComponent(item.dataset.episodeSlug) : "";
+        const episodeName = item.dataset.episodeName ? decodeURIComponent(item.dataset.episodeName) : "";
+        if (episodeSlug) {
+          continueWatching(slug, episodeSlug, episodeName);
+        } else {
+          goToDetail(slug);
+        }
+      });
+    });
+  }
+
+  async function continueWatching(slug, episodeSlug, episodeName) {
+    state.page = "detail";
+    state.detailSlug = slug;
+    setActiveNav("");
+    app.innerHTML = loadingBlock("Membuka episode terakhir...");
+
+    try {
+      const json = await fetchJSON(ANIME_ENDPOINTS.detail(slug));
+      state.detailData = json.detail;
+      openPlayer(episodeSlug, episodeName);
+    } catch (err) {
+      app.innerHTML = emptyBlock("Gagal memuat anime: " + err.message);
+    }
+  }
+
+  return { renderHome, renderGenre, renderRiwayat, renderSearch, clearHistory, getHistoryCount };
 })();

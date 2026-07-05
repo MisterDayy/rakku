@@ -39,6 +39,14 @@ const MangaApp = (function () {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
   }
 
+  function clearHistory() {
+    localStorage.removeItem(HISTORY_KEY);
+  }
+
+  function getHistoryCount() {
+    return getHistory().length;
+  }
+
   function setActiveNav(page) {
     if (window.setBottomNavActive) window.setBottomNavActive(page);
   }
@@ -589,5 +597,13 @@ const MangaApp = (function () {
     }
   }
 
-  return { renderHome, renderGenre, renderRiwayat, renderSearch, stopCarousel: clearCarouselInterval };
+  return {
+    renderHome,
+    renderGenre,
+    renderRiwayat,
+    renderSearch,
+    stopCarousel: clearCarouselInterval,
+    clearHistory,
+    getHistoryCount,
+  };
 })();

@@ -4,6 +4,7 @@ const ICONS = {
   home: `<svg viewBox="0 0 24 24" width="21" height="21"><path fill="currentColor" d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg>`,
   genre: `<svg viewBox="0 0 24 24" width="21" height="21"><path fill="currentColor" d="M3 5h11v2H3zm0 6h11v2H3zm0 6h7v2H3zM17 3l4 4-1.4 1.4L18 6.8V19a1 1 0 0 1-1 1h-1v-2h1V6.8l-1.6 1.6L14 7z"/></svg>`,
   riwayat: `<svg viewBox="0 0 24 24" width="21" height="21"><path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2m1 10.59V6h-2v8l6 3.6 1-1.6z"/></svg>`,
+  profil: `<svg viewBox="0 0 24 24" width="21" height="21"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5m0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5"/></svg>`,
 };
 
 const BOTTOM_NAV_CONFIG = {
@@ -11,11 +12,62 @@ const BOTTOM_NAV_CONFIG = {
     { page: "home", label: "Beranda", icon: ICONS.home, action: () => MangaApp.renderHome() },
     { page: "genre", label: "Genre", icon: ICONS.genre, action: () => MangaApp.renderGenre() },
     { page: "riwayat", label: "Riwayat", icon: ICONS.riwayat, action: () => MangaApp.renderRiwayat() },
+    { page: "profile", label: "Profil", icon: ICONS.profil, action: () => renderProfile() },
   ],
   anime: [
     { page: "home", label: "Beranda", icon: ICONS.home, action: () => AnimeApp.renderHome() },
+    { page: "genre", label: "Genre", icon: ICONS.genre, action: () => AnimeApp.renderGenre() },
+    { page: "riwayat", label: "Riwayat", icon: ICONS.riwayat, action: () => AnimeApp.renderRiwayat() },
+    { page: "profile", label: "Profil", icon: ICONS.profil, action: () => renderProfile() },
   ],
 };
+
+function renderProfile() {
+  MangaApp.stopCarousel();
+  if (window.setBottomNavActive) window.setBottomNavActive("profile");
+
+  const app = document.getElementById("app");
+  const mangaCount = MangaApp.getHistoryCount();
+  const animeCount = AnimeApp.getHistoryCount();
+
+  app.innerHTML = `
+    <div class="profile-header">
+      <div class="profile-avatar">六</div>
+      <div>
+        <div class="profile-name">Pembaca Rakku</div>
+        <div class="profile-sub">Baca manga &amp; nonton anime dalam satu tempat</div>
+      </div>
+    </div>
+
+    <div class="section-title"><span class="st-bar"></span>Statistik</div>
+    <div class="profile-stats">
+      <div class="stat">Riwayat Manga: <b>${mangaCount}</b></div>
+      <div class="stat">Riwayat Anime: <b>${animeCount}</b></div>
+    </div>
+
+    <div class="section-title"><span class="st-bar"></span>Pengaturan</div>
+    <div class="profile-menu">
+      <button class="profile-menu-item" id="clearMangaHist">Hapus Riwayat Baca Manga</button>
+      <button class="profile-menu-item" id="clearAnimeHist">Hapus Riwayat Tonton Anime</button>
+    </div>
+
+    <div class="section-title"><span class="st-bar"></span>Tentang</div>
+    <p class="profile-about">Rakku adalah aplikasi untuk baca manga &amp; nonton anime. Gunakan tombol menu di pojok kiri atas untuk berpindah antara mode Baca Manga dan Nonton Anime.</p>
+  `;
+
+  document.getElementById("clearMangaHist").addEventListener("click", () => {
+    if (confirm("Hapus semua riwayat baca manga?")) {
+      MangaApp.clearHistory();
+      renderProfile();
+    }
+  });
+  document.getElementById("clearAnimeHist").addEventListener("click", () => {
+    if (confirm("Hapus semua riwayat tonton anime?")) {
+      AnimeApp.clearHistory();
+      renderProfile();
+    }
+  });
+}
 
 function renderBottomNav() {
   const nav = document.getElementById("bottomNav");

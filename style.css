@@ -457,6 +457,80 @@ h1, h2, .brand-text, .section-title {
 .hist-title { font-size: 14px; font-weight: 700; }
 .hist-chapter { font-size: 12px; color: var(--paper-dim); }
 
+/* ===== Profile Page ===== */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--rust);
+  color: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.profile-name {
+  font-size: 17px;
+  font-weight: 700;
+  font-family: "Sora", sans-serif;
+}
+
+.profile-sub {
+  font-size: 12.5px;
+  color: var(--paper-dim);
+  margin-top: 3px;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 26px;
+  flex-wrap: wrap;
+}
+
+.profile-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 26px;
+}
+
+.profile-menu-item {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--paper);
+  text-align: left;
+  padding: 13px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.profile-menu-item:hover {
+  border-color: var(--rust);
+  color: var(--rust);
+}
+
+.profile-about {
+  font-size: 13px;
+  color: var(--paper-dim);
+  line-height: 1.7;
+  max-width: 600px;
+}
+
 @media (min-width: 640px) {
   .topbar { padding: 16px 32px; }
   .container { padding: 24px 32px 16px; }
