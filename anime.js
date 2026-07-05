@@ -31,6 +31,18 @@ const AnimeApp = (function () {
     return getHistory().length;
   }
 
+  // Genre yang tidak ingin ditampilkan/diakses di aplikasi ini.
+  const BLOCKED_GENRES = ["ecchi"];
+
+  function isBlockedGenreName(name) {
+    const n = (name || "").toLowerCase().trim();
+    return BLOCKED_GENRES.includes(n);
+  }
+
+  function hasBlockedGenre(genres) {
+    return (genres || []).some((g) => isBlockedGenreName(g?.name || g));
+  }
+
   // Beberapa endpoint anime punya bentuk response yang tidak seragam,
   // jadi kita coba beberapa nama field yang umum sebelum fallback ke array pertama yang ketemu.
   function extractArray(json, keys) {
@@ -186,7 +198,8 @@ const AnimeApp = (function () {
     try {
       if (!state.genreList.length) {
         const json = await fetchJSON(ANIME_ENDPOINTS.genres());
-        state.genreList = extractArray(json, ["genres", "data", "list"]);
+        const allGenres = extractArray(json, ["genres", "data", "list"]);
+        state.genreList = allGenres.filter((g) => !isBlockedGenreName(g.name || g.title || g.slug));
       }
 
       const bar = document.getElementById("genreBar");
@@ -321,9 +334,17 @@ const AnimeApp = (function () {
     try {
       const json = await fetchJSON(ANIME_ENDPOINTS.detail(slug));
       const d = json.detail;
-      state.detailData = d;
 
       const genres = d.genres || [];
+
+      if (hasBlockedGenre(genres)) {
+        state.detailData = null;
+        app.innerHTML = `<div class="back-btn" id="backBtn">&larr; Kembali</div>${emptyBlock("Konten ini tidak tersedia di aplikasi.")}`;
+        document.getElementById("backBtn").addEventListener("click", () => renderHome());
+        return;
+      }
+
+      state.detailData = d;
 
       app.innerHTML = `
         <div class="back-btn" id="backBtn">&larr; Kembali</div>
@@ -503,7 +524,16 @@ const AnimeApp = (function () {
 
     try {
       const json = await fetchJSON(ANIME_ENDPOINTS.detail(slug));
-      state.detailData = json.detail;
+      const d = json.detail;
+
+      if (hasBlockedGenre(d.genres)) {
+        state.detailData = null;
+        app.innerHTML = `<div class="back-btn" id="backBtn">&larr; Kembali</div>${emptyBlock("Konten ini tidak tersedia di aplikasi.")}`;
+        document.getElementById("backBtn").addEventListener("click", () => renderHome());
+        return;
+      }
+
+      state.detailData = d;
       openPlayer(episodeSlug, episodeName);
     } catch (err) {
       app.innerHTML = emptyBlock("Gagal memuat anime: " + err.message);
