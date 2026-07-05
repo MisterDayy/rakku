@@ -94,7 +94,7 @@ async function renderProfile() {
 
   app.innerHTML = `
     <div class="profile-header">
-      <div class="profile-avatar">六</div>
+      <div class="profile-avatar"><img src="assets/logo.jpg" alt="Rakku" /></div>
       <div>
         <div class="profile-name">${username}</div>
         <div class="profile-sub">${user.email}</div>
