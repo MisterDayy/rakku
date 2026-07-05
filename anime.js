@@ -45,6 +45,87 @@ const AnimeApp = (function () {
     return [];
   }
 
+  let carouselInterval = null;
+  function clearCarouselInterval() {
+    if (carouselInterval) clearInterval(carouselInterval);
+    carouselInterval = null;
+  }
+
+  function carouselSlideHTML(item) {
+    const safeTitle = item.title || "Tanpa Judul";
+    return `
+      <div class="carousel-slide" data-slug="${encodeURIComponent(item.slug)}">
+        <img src="${item.poster}" alt="${safeTitle}" onerror="this.src='https://via.placeholder.com/800x450?text=No+Image'" />
+        <div class="carousel-overlay">
+          <div class="carousel-info">
+            ${item.type ? `<span class="carousel-badge">${item.type}</span>` : ""}
+            <h2>${safeTitle}</h2>
+            <p>${item.episode || item.status_or_day || ""}</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function initCarousel(items) {
+    clearCarouselInterval();
+    if (!items.length) return;
+
+    let idx = 0;
+    const track = document.getElementById("animeCarouselTrack");
+    const dotsWrap = document.getElementById("animeCarouselDots");
+    const carouselEl = document.getElementById("animeCarousel");
+    if (!track || !dotsWrap || !carouselEl) return;
+
+    dotsWrap.innerHTML = items
+      .map((_, i) => `<button class="carousel-dot ${i === 0 ? "active" : ""}" data-i="${i}"></button>`)
+      .join("");
+
+    function goTo(i) {
+      idx = (i + items.length) % items.length;
+      track.style.transform = `translateX(-${idx * 100}%)`;
+      dotsWrap.querySelectorAll(".carousel-dot").forEach((d, di) => d.classList.toggle("active", di === idx));
+    }
+
+    document.getElementById("animeCarouselPrev")?.addEventListener("click", () => { goTo(idx - 1); restartAutoplay(); });
+    document.getElementById("animeCarouselNext")?.addEventListener("click", () => { goTo(idx + 1); restartAutoplay(); });
+    dotsWrap.querySelectorAll(".carousel-dot").forEach((dot) => {
+      dot.addEventListener("click", () => { goTo(Number(dot.dataset.i)); restartAutoplay(); });
+    });
+
+    document.querySelectorAll("#animeCarouselTrack .carousel-slide").forEach((slide) => {
+      slide.addEventListener("click", () => {
+        const slug = decodeURIComponent(slide.dataset.slug);
+        goToDetail(slug);
+      });
+    });
+
+    let startX = 0;
+    carouselEl.addEventListener(
+      "touchstart",
+      (e) => { startX = e.touches[0].clientX; },
+      { passive: true }
+    );
+    carouselEl.addEventListener(
+      "touchend",
+      (e) => {
+        const diff = e.changedTouches[0].clientX - startX;
+        if (diff > 40) { goTo(idx - 1); restartAutoplay(); }
+        else if (diff < -40) { goTo(idx + 1); restartAutoplay(); }
+      },
+      { passive: true }
+    );
+
+    function restartAutoplay() {
+      clearCarouselInterval();
+      if (items.length > 1) {
+        carouselInterval = setInterval(() => goTo(idx + 1), 4000);
+      }
+    }
+
+    restartAutoplay();
+  }
+
   function setActiveNav(page) {
     if (window.setBottomNavActive) window.setBottomNavActive(page);
   }
@@ -92,6 +173,7 @@ const AnimeApp = (function () {
   }
 
   async function renderGenre() {
+    clearCarouselInterval();
     state.page = "genre";
     setActiveNav("genre");
 
@@ -157,6 +239,7 @@ const AnimeApp = (function () {
     state.page = "home";
     setActiveNav("home");
     app.innerHTML = `
+      <div id="carouselWrap">${loadingBlock("Memuat highlight...")}</div>
       <div class="section-title"><span class="st-bar"></span>Ongoing</div>
       <div id="ongoingGrid">${loadingBlock()}</div>
       <div class="section-title"><span class="st-bar"></span>Baru Ditambahkan</div>
@@ -168,6 +251,22 @@ const AnimeApp = (function () {
       const ongoing = json.ongoing || [];
       const recent = json.recent || [];
 
+      const carouselWrap = document.getElementById("carouselWrap");
+      const featured = ongoing.slice(0, 5);
+      if (featured.length) {
+        carouselWrap.innerHTML = `
+          <div class="carousel" id="animeCarousel">
+            <div class="carousel-track" id="animeCarouselTrack">${featured.map(carouselSlideHTML).join("")}</div>
+            <button class="carousel-arrow carousel-prev" id="animeCarouselPrev" aria-label="Sebelumnya">&lsaquo;</button>
+            <button class="carousel-arrow carousel-next" id="animeCarouselNext" aria-label="Selanjutnya">&rsaquo;</button>
+            <div class="carousel-dots" id="animeCarouselDots"></div>
+          </div>
+        `;
+        initCarousel(featured);
+      } else {
+        carouselWrap.innerHTML = "";
+      }
+
       const ongoingGrid = document.getElementById("ongoingGrid");
       ongoingGrid.className = "grid";
       ongoingGrid.innerHTML = ongoing.length ? ongoing.map(cardHTML).join("") : emptyBlock("Tidak ada data.");
@@ -178,11 +277,12 @@ const AnimeApp = (function () {
 
       attachCardListeners();
     } catch (err) {
-      app.innerHTML = emptyBlock("Gagal memuat data: " + err.message);
+      document.getElementById("ongoingGrid").innerHTML = emptyBlock("Gagal memuat data: " + err.message);
     }
   }
 
   async function renderSearch(query) {
+    clearCarouselInterval();
     state.page = "search";
     setActiveNav("");
     app.innerHTML = `
@@ -210,6 +310,7 @@ const AnimeApp = (function () {
   }
 
   async function goToDetail(slug) {
+    clearCarouselInterval();
     state.page = "detail";
     state.detailSlug = slug;
     setActiveNav("");
@@ -283,6 +384,7 @@ const AnimeApp = (function () {
   }
 
   async function openPlayer(slug, episodeName) {
+    clearCarouselInterval();
     state.page = "player";
     setActiveNav("");
     app.innerHTML = `<div class="back-btn" id="backBtn">&larr; Kembali ke daftar episode</div>${loadingBlock("Memuat link streaming...")}`;
@@ -351,6 +453,7 @@ const AnimeApp = (function () {
   }
 
   function renderRiwayat() {
+    clearCarouselInterval();
     state.page = "riwayat";
     setActiveNav("riwayat");
 
@@ -392,6 +495,7 @@ const AnimeApp = (function () {
   }
 
   async function continueWatching(slug, episodeSlug, episodeName) {
+    clearCarouselInterval();
     state.page = "detail";
     state.detailSlug = slug;
     setActiveNav("");
@@ -406,5 +510,13 @@ const AnimeApp = (function () {
     }
   }
 
-  return { renderHome, renderGenre, renderRiwayat, renderSearch, clearHistory, getHistoryCount };
+  return {
+    renderHome,
+    renderGenre,
+    renderRiwayat,
+    renderSearch,
+    clearHistory,
+    getHistoryCount,
+    stopCarousel: clearCarouselInterval,
+  };
 })();

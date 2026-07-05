@@ -24,6 +24,7 @@ const BOTTOM_NAV_CONFIG = {
 
 function renderProfile() {
   MangaApp.stopCarousel();
+  AnimeApp.stopCarousel();
   if (window.setBottomNavActive) window.setBottomNavActive("profile");
 
   const app = document.getElementById("app");
@@ -114,6 +115,7 @@ function switchMode(mode) {
   document.getElementById("searchInput").value = "";
 
   if (mode === "anime") MangaApp.stopCarousel();
+  else AnimeApp.stopCarousel();
 
   renderBottomNav();
   if (mode === "manga") MangaApp.renderHome();
