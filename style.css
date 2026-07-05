@@ -531,6 +531,143 @@ h1, h2, .brand-text, .section-title {
   max-width: 600px;
 }
 
+.profile-menu-item.danger {
+  color: #e2685a;
+  border-color: rgba(226, 104, 90, 0.35);
+}
+.profile-menu-item.danger:hover {
+  border-color: #e2685a;
+  color: #e2685a;
+}
+
+/* ===== Level / EXP ===== */
+.level-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 26px;
+}
+.level-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.exp-bar-wrap {
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  height: 10px;
+  overflow: hidden;
+}
+.exp-bar-fill {
+  height: 100%;
+  background: var(--gold);
+}
+
+/* ===== Bookmark button (detail page) ===== */
+.detail-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.bookmark-btn {
+  flex-shrink: 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--paper);
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.bookmark-btn:hover { border-color: var(--gold); }
+.bookmark-btn.saved {
+  background: var(--gold);
+  color: #1a1a1a;
+  border-color: var(--gold);
+}
+.bookmark-btn:disabled { opacity: 0.6; cursor: default; }
+
+.bm-remove {
+  background: none;
+  border: none;
+  color: var(--paper-dim);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  align-self: center;
+  padding: 4px 8px;
+  margin-left: auto;
+}
+.bm-remove:hover { color: #e2685a; }
+
+/* ===== Auth (Login/Register) ===== */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 380px;
+}
+.auth-form label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--paper-dim);
+  margin-top: 8px;
+}
+.auth-form input {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--paper);
+  padding: 11px 13px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.auth-form input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+.auth-submit {
+  margin-top: 16px;
+  background: var(--gold);
+  color: #1a1a1a;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.auth-submit:disabled { opacity: 0.6; cursor: default; }
+.auth-error {
+  color: #e2685a;
+  font-size: 12.5px;
+  min-height: 16px;
+}
+.auth-switch {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--paper-dim);
+}
+.auth-switch a { color: var(--gold); font-weight: 700; text-decoration: none; }
+.auth-info {
+  font-size: 13.5px;
+  color: var(--paper-dim);
+  line-height: 1.7;
+  max-width: 420px;
+  margin-bottom: 18px;
+}
+
 @media (min-width: 640px) {
   .topbar { padding: 16px 32px; }
   .container { padding: 24px 32px 16px; }

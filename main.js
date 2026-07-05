@@ -11,33 +11,98 @@ const BOTTOM_NAV_CONFIG = {
   manga: [
     { page: "home", label: "Beranda", icon: ICONS.home, action: () => MangaApp.renderHome() },
     { page: "genre", label: "Genre", icon: ICONS.genre, action: () => MangaApp.renderGenre() },
-    { page: "riwayat", label: "Riwayat", icon: ICONS.riwayat, action: () => MangaApp.renderRiwayat() },
-    { page: "profile", label: "Profil", icon: ICONS.profil, action: () => renderProfile() },
+    { page: "riwayat", label: "Riwayat", icon: ICONS.riwayat, action: () => requireAuth(() => MangaApp.renderRiwayat()) },
+    { page: "profile", label: "Profil", icon: ICONS.profil, action: () => requireAuth(() => renderProfile()) },
   ],
   anime: [
     { page: "home", label: "Beranda", icon: ICONS.home, action: () => AnimeApp.renderHome() },
     { page: "genre", label: "Genre", icon: ICONS.genre, action: () => AnimeApp.renderGenre() },
-    { page: "riwayat", label: "Riwayat", icon: ICONS.riwayat, action: () => AnimeApp.renderRiwayat() },
-    { page: "profile", label: "Profil", icon: ICONS.profil, action: () => renderProfile() },
+    { page: "riwayat", label: "Riwayat", icon: ICONS.riwayat, action: () => requireAuth(() => AnimeApp.renderRiwayat()) },
+    { page: "profile", label: "Profil", icon: ICONS.profil, action: () => requireAuth(() => renderProfile()) },
   ],
 };
 
-function renderProfile() {
+// ===== Auth gate =====
+let pendingAction = null;
+
+async function requireAuth(action) {
+  if (!AuthApp.isReady()) {
+    document.getElementById("app").innerHTML = `<div class="loading"><div class="spinner"></div>Memeriksa sesi...</div>`;
+    await AuthApp.waitUntilReady();
+  }
+  const user = AuthApp.getCachedUser();
+  if (user) {
+    action();
+    return;
+  }
+  pendingAction = action;
+  AuthApp.renderLogin();
+}
+window.requireAuth = requireAuth;
+
+window.onAuthSuccess = function () {
+  const action = pendingAction;
+  pendingAction = null;
+  if (action) action();
+  else renderProfile();
+};
+
+// ===== Navigasi lintas mode (dipakai dari daftar bookmark) =====
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll(".side-menu-item").forEach((b) => b.classList.toggle("active", b.dataset.mode === mode));
+  document.getElementById("searchInput").placeholder = mode === "manga" ? "Cari judul manga..." : "Cari judul anime...";
+  document.getElementById("searchInput").value = "";
+  if (mode === "anime") MangaApp.stopCarousel();
+  else AnimeApp.stopCarousel();
+  renderBottomNav();
+}
+
+window.openContentDetail = function (type, refId) {
+  if (type !== currentMode) setMode(type);
+  if (type === "manga") MangaApp.goToDetail(refId);
+  else AnimeApp.goToDetail(refId);
+};
+
+async function renderProfile() {
   MangaApp.stopCarousel();
   AnimeApp.stopCarousel();
   if (window.setBottomNavActive) window.setBottomNavActive("profile");
 
   const app = document.getElementById("app");
-  const mangaCount = MangaApp.getHistoryCount();
-  const animeCount = AnimeApp.getHistoryCount();
+  const user = AuthApp.getCachedUser();
+
+  if (!user) {
+    AuthApp.renderLogin();
+    return;
+  }
+
+  app.innerHTML = `<div class="loading"><div class="spinner"></div>Memuat profil...</div>`;
+
+  const [{ data: profileRow }, mangaCount, animeCount] = await Promise.all([
+    supabaseClient.from("profiles").select("*").eq("id", user.id).single(),
+    MangaApp.getHistoryCount(),
+    AnimeApp.getHistoryCount(),
+  ]);
+
+  const username = profileRow?.username || user.email.split("@")[0];
+  const level = profileRow?.level ?? 1;
+  const exp = profileRow?.exp ?? 0;
+  const expNeeded = level * 100;
+  const expPct = Math.min(100, Math.round((exp / expNeeded) * 100));
 
   app.innerHTML = `
     <div class="profile-header">
       <div class="profile-avatar">六</div>
       <div>
-        <div class="profile-name">Pembaca Rakku</div>
-        <div class="profile-sub">Baca manga &amp; nonton anime dalam satu tempat</div>
+        <div class="profile-name">${username}</div>
+        <div class="profile-sub">${user.email}</div>
       </div>
+    </div>
+
+    <div class="level-card">
+      <div class="level-row"><span>Level ${level}</span><span>${exp} / ${expNeeded} EXP</span></div>
+      <div class="exp-bar-wrap"><div class="exp-bar-fill" style="width:${expPct}%"></div></div>
     </div>
 
     <div class="section-title"><span class="st-bar"></span>Statistik</div>
@@ -48,25 +113,98 @@ function renderProfile() {
 
     <div class="section-title"><span class="st-bar"></span>Pengaturan</div>
     <div class="profile-menu">
+      <button class="profile-menu-item" id="viewBookmarks">Bookmark Saya</button>
       <button class="profile-menu-item" id="clearMangaHist">Hapus Riwayat Baca Manga</button>
       <button class="profile-menu-item" id="clearAnimeHist">Hapus Riwayat Tonton Anime</button>
+      <button class="profile-menu-item danger" id="logoutBtn">Keluar Akun</button>
     </div>
 
     <div class="section-title"><span class="st-bar"></span>Tentang</div>
     <p class="profile-about">Rakku adalah aplikasi untuk baca manga &amp; nonton anime. Gunakan tombol menu di pojok kiri atas untuk berpindah antara mode Baca Manga dan Nonton Anime.</p>
   `;
 
-  document.getElementById("clearMangaHist").addEventListener("click", () => {
+  document.getElementById("viewBookmarks").addEventListener("click", () => renderBookmarkList());
+
+  document.getElementById("clearMangaHist").addEventListener("click", async () => {
     if (confirm("Hapus semua riwayat baca manga?")) {
-      MangaApp.clearHistory();
+      await MangaApp.clearHistory();
       renderProfile();
     }
   });
-  document.getElementById("clearAnimeHist").addEventListener("click", () => {
+  document.getElementById("clearAnimeHist").addEventListener("click", async () => {
     if (confirm("Hapus semua riwayat tonton anime?")) {
-      AnimeApp.clearHistory();
+      await AnimeApp.clearHistory();
       renderProfile();
     }
+  });
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    if (!confirm("Yakin mau keluar akun?")) return;
+    await AuthApp.logout();
+    if (currentMode === "manga") MangaApp.renderHome();
+    else AnimeApp.renderHome();
+  });
+}
+
+async function renderBookmarkList() {
+  if (window.setBottomNavActive) window.setBottomNavActive("");
+  const app = document.getElementById("app");
+  const user = AuthApp.getCachedUser();
+  if (!user) {
+    AuthApp.renderLogin();
+    return;
+  }
+
+  app.innerHTML = `<div class="back-btn" id="bmBack">&larr; Kembali ke Profil</div><div class="section-title"><span class="st-bar"></span>Bookmark Saya</div><div id="bmGrid"><div class="loading"><div class="spinner"></div>Memuat bookmark...</div></div>`;
+  document.getElementById("bmBack").addEventListener("click", () => renderProfile());
+
+  const { data, error } = await supabaseClient
+    .from("bookmarks")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  const grid = document.getElementById("bmGrid");
+
+  if (error) {
+    grid.innerHTML = `<div class="empty-state">Gagal memuat bookmark: ${error.message}</div>`;
+    return;
+  }
+
+  if (!data.length) {
+    grid.innerHTML = `<div class="empty-state">Belum ada bookmark. Buka detail manga/anime lalu tekan tombol Simpan.</div>`;
+    return;
+  }
+
+  grid.className = "hist-list";
+  grid.innerHTML = data
+    .map(
+      (b) => `
+    <div class="hist-item" data-type="${b.content_type}" data-ref="${encodeURIComponent(b.ref_id)}">
+      <img src="${b.thumb || ""}" alt="${b.title}" onerror="this.src='https://via.placeholder.com/80x110?text=No+Image'" />
+      <div class="hist-info">
+        <div class="hist-title">${b.title}</div>
+        <div class="hist-chapter">${b.content_type === "manga" ? "Manga" : "Anime"}</div>
+      </div>
+      <button class="bm-remove" data-id="${b.id}" title="Hapus bookmark">&times;</button>
+    </div>`
+    )
+    .join("");
+
+  grid.querySelectorAll(".hist-item").forEach((item) => {
+    item.addEventListener("click", (e) => {
+      if (e.target.closest(".bm-remove")) return;
+      const type = item.dataset.type;
+      const ref = decodeURIComponent(item.dataset.ref);
+      window.openContentDetail(type, ref);
+    });
+  });
+
+  grid.querySelectorAll(".bm-remove").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      await supabaseClient.from("bookmarks").delete().eq("id", btn.dataset.id);
+      renderBookmarkList();
+    });
   });
 }
 
@@ -108,19 +246,9 @@ function switchMode(mode) {
     closeSideMenu();
     return;
   }
-  currentMode = mode;
-
-  document.querySelectorAll(".side-menu-item").forEach((b) => b.classList.toggle("active", b.dataset.mode === mode));
-  document.getElementById("searchInput").placeholder = mode === "manga" ? "Cari judul manga..." : "Cari judul anime...";
-  document.getElementById("searchInput").value = "";
-
-  if (mode === "anime") MangaApp.stopCarousel();
-  else AnimeApp.stopCarousel();
-
-  renderBottomNav();
+  setMode(mode);
   if (mode === "manga") MangaApp.renderHome();
   else AnimeApp.renderHome();
-
   closeSideMenu();
 }
 

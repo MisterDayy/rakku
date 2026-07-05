@@ -25,26 +25,108 @@ const MangaApp = (function () {
     carouselInterval = null;
   }
 
-  const HISTORY_KEY = "rakku_history";
+  const CONTENT_TYPE = "manga";
 
-  function getHistory() {
-    try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
-    catch { return []; }
+  async function getHistory() {
+    const user = AuthApp.getCachedUser();
+    if (!user) return [];
+
+    const { data, error } = await supabaseClient
+      .from("history")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("content_type", CONTENT_TYPE)
+      .order("updated_at", { ascending: false })
+      .limit(40);
+
+    if (error) {
+      console.error("Gagal ambil riwayat:", error.message);
+      return [];
+    }
+
+    return data.map((h) => ({
+      detailUrl: h.ref_id,
+      chapterUrl: h.progress_id,
+      chapterName: h.progress_name,
+      title: h.title,
+      thumb: h.thumb,
+    }));
   }
 
-  function pushHistory(entry) {
-    let hist = getHistory().filter((h) => h.detailUrl !== entry.detailUrl);
-    hist.unshift(entry);
-    hist = hist.slice(0, 40);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
+  async function pushHistory(entry) {
+    const user = AuthApp.getCachedUser();
+    if (!user) return;
+
+    const { error } = await supabaseClient.from("history").upsert(
+      {
+        user_id: user.id,
+        content_type: CONTENT_TYPE,
+        ref_id: entry.detailUrl,
+        title: entry.title,
+        thumb: entry.thumb,
+        progress_id: entry.chapterUrl,
+        progress_name: entry.chapterName,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,content_type,ref_id" }
+    );
+
+    if (error) console.error("Gagal simpan riwayat:", error.message);
   }
 
-  function clearHistory() {
-    localStorage.removeItem(HISTORY_KEY);
+  async function clearHistory() {
+    const user = AuthApp.getCachedUser();
+    if (!user) return;
+    await supabaseClient.from("history").delete().eq("user_id", user.id).eq("content_type", CONTENT_TYPE);
   }
 
-  function getHistoryCount() {
-    return getHistory().length;
+  async function getHistoryCount() {
+    const user = AuthApp.getCachedUser();
+    if (!user) return 0;
+    const { count } = await supabaseClient
+      .from("history")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("content_type", CONTENT_TYPE);
+    return count || 0;
+  }
+
+  async function isBookmarked(refId) {
+    const user = AuthApp.getCachedUser();
+    if (!user) return false;
+    const { data } = await supabaseClient
+      .from("bookmarks")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("content_type", CONTENT_TYPE)
+      .eq("ref_id", refId)
+      .maybeSingle();
+    return !!data;
+  }
+
+  async function toggleBookmark(refId, title, thumb) {
+    const user = AuthApp.getCachedUser();
+    if (!user) return false;
+
+    const already = await isBookmarked(refId);
+    if (already) {
+      await supabaseClient
+        .from("bookmarks")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("content_type", CONTENT_TYPE)
+        .eq("ref_id", refId);
+      return false;
+    }
+
+    await supabaseClient.from("bookmarks").insert({
+      user_id: user.id,
+      content_type: CONTENT_TYPE,
+      ref_id: refId,
+      title,
+      thumb,
+    });
+    return true;
   }
 
   function setActiveNav(page) {
@@ -367,13 +449,13 @@ const MangaApp = (function () {
     }
   }
 
-  function renderRiwayat() {
+  async function renderRiwayat() {
     clearCarouselInterval();
     state.page = "riwayat";
     setActiveNav("riwayat");
 
-    const hist = getHistory();
-    app.innerHTML = `<div class="section-title"><span class="st-bar"></span>Riwayat Baca</div><div id="histGrid"></div>`;
+    app.innerHTML = `<div class="section-title"><span class="st-bar"></span>Riwayat Baca</div><div id="histGrid">${loadingBlock("Memuat riwayat...")}</div>`;
+    const hist = await getHistory();
     const grid = document.getElementById("histGrid");
 
     if (!hist.length) {
@@ -476,7 +558,10 @@ const MangaApp = (function () {
         <div class="detail-hero">
           <img src="${d.thumb}" alt="${d.title}" />
           <div class="detail-info">
-            <h1>${d.title}</h1>
+            <div class="detail-title-row">
+              <h1>${d.title}</h1>
+              <button class="bookmark-btn" id="bookmarkBtn">☆ Simpan</button>
+            </div>
             <div class="detail-stats">
               <div class="stat">Chapter: <b>${d.totalChapters ?? d.chapters?.length ?? "-"}</b></div>
               ${d.status ? `<div class="stat">Status: <b>${d.status}</b></div>` : ""}
@@ -513,10 +598,35 @@ const MangaApp = (function () {
           openReader(link, name);
         });
       });
+
+      setupBookmarkButton(href, d.title, d.thumb);
     } catch (err) {
       app.innerHTML = `<div class="back-btn" id="backBtn">&larr; Kembali</div>${emptyBlock("Gagal memuat detail: " + err.message)}`;
       document.getElementById("backBtn").addEventListener("click", () => renderHome());
     }
+  }
+
+  function setupBookmarkButton(refId, title, thumb) {
+    const btn = document.getElementById("bookmarkBtn");
+    if (!btn) return;
+
+    function paint(saved) {
+      btn.textContent = saved ? "★ Tersimpan" : "☆ Simpan";
+      btn.classList.toggle("saved", saved);
+    }
+
+    if (AuthApp.getCachedUser()) {
+      isBookmarked(refId).then(paint);
+    }
+
+    btn.addEventListener("click", () => {
+      window.requireAuth(async () => {
+        btn.disabled = true;
+        const saved = await toggleBookmark(refId, title, thumb);
+        paint(saved);
+        btn.disabled = false;
+      });
+    });
   }
 
   function getChapterNeighbors(chapterUrl) {
@@ -605,5 +715,6 @@ const MangaApp = (function () {
     stopCarousel: clearCarouselInterval,
     clearHistory,
     getHistoryCount,
+    goToDetail,
   };
 })();
