@@ -122,7 +122,11 @@ const AuthApp = (function () {
       btn.disabled = true;
       btn.textContent = "Memproses...";
 
-      const { data, error } = await client.auth.signUp({ email, password });
+      const { data, error } = await client.auth.signUp({
+        email,
+        password,
+        options: { data: { username } },
+      });
 
       if (error) {
         errBox.textContent = translateAuthError(error.message);
@@ -132,12 +136,6 @@ const AuthApp = (function () {
       }
 
       cachedUser = data.user;
-
-      // Trigger di database otomatis bikin row profiles dengan username dari email.
-      // Di sini kita timpa dengan username pilihan user.
-      if (data.user) {
-        await client.from("profiles").update({ username }).eq("id", data.user.id);
-      }
 
       if (!data.session) {
         app.innerHTML = `
