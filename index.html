@@ -11,6 +11,38 @@
 </head>
 <body>
 
+<div id="splashScreen" class="splash-screen">
+  <video id="splashVideo" src="assets/splash.mp4" autoplay muted playsinline webkit-playsinline></video>
+</div>
+<script>
+(function () {
+  var KEY = "rakku_splash_shown";
+  var splash = document.getElementById("splashScreen");
+  var video = document.getElementById("splashVideo");
+
+  if (sessionStorage.getItem(KEY)) {
+    splash.style.display = "none";
+    return;
+  }
+
+  var hidden = false;
+  function hideSplash() {
+    if (hidden) return;
+    hidden = true;
+    sessionStorage.setItem(KEY, "1");
+    splash.classList.add("fade-out");
+    setTimeout(function () {
+      splash.style.display = "none";
+    }, 400);
+  }
+
+  video.addEventListener("ended", hideSplash);
+  video.addEventListener("error", hideSplash);
+  // Jaga-jaga kalau video gagal autoplay/lambat load di HP tertentu
+  setTimeout(hideSplash, 6000);
+})();
+</script>
+
 <header class="topbar">
   <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu">
     <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>

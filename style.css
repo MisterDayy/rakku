@@ -663,6 +663,31 @@ h1, h2, .brand-text, .section-title {
   margin-bottom: 18px;
 }
 
+/* ===== Splash Screen ===== */
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.4s ease;
+  opacity: 1;
+}
+
+.splash-screen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.splash-screen video {
+  width: min(65vw, 320px);
+  height: auto;
+  border-radius: 24px;
+  box-shadow: 0 0 40px rgba(201, 162, 75, 0.25);
+}
+
 /* ===== EXP Toast ===== */
 .exp-toast {
   position: fixed;
