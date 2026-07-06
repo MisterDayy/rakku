@@ -118,6 +118,7 @@ async function renderProfile() {
       <button class="profile-menu-item" id="viewBookmarks">Bookmark Saya</button>
       <button class="profile-menu-item" id="clearMangaHist">Hapus Riwayat Baca Manga</button>
       <button class="profile-menu-item" id="clearAnimeHist">Hapus Riwayat Tonton Anime</button>
+      ${AuthApp.isStaff() ? `<button class="profile-menu-item admin" id="goAdminPanel">Panel Admin</button>` : ""}
       <button class="profile-menu-item danger" id="logoutBtn">Keluar Akun</button>
     </div>
 
@@ -126,6 +127,9 @@ async function renderProfile() {
   `;
 
   document.getElementById("viewBookmarks").addEventListener("click", () => renderBookmarkList());
+
+  const goAdminPanel = document.getElementById("goAdminPanel");
+  if (goAdminPanel) goAdminPanel.addEventListener("click", () => AdminApp.renderAdminPanel());
 
   document.getElementById("clearMangaHist").addEventListener("click", async () => {
     if (confirm("Hapus semua riwayat baca manga?")) {
@@ -146,6 +150,8 @@ async function renderProfile() {
     else AnimeApp.renderHome();
   });
 }
+
+window.renderProfile = renderProfile;
 
 async function renderBookmarkList() {
   if (window.setBottomNavActive) window.setBottomNavActive("");
