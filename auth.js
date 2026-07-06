@@ -3,22 +3,59 @@ const AuthApp = (function () {
   const client = supabaseClient;
 
   let cachedUser = null;
+  let cachedProfile = null;
   let ready = false;
   let readyResolve;
   const readyPromise = new Promise((res) => { readyResolve = res; });
 
-  client.auth.getSession().then(({ data }) => {
+  async function fetchProfile(userId) {
+    if (!userId) {
+      cachedProfile = null;
+      return null;
+    }
+    const { data, error } = await client.from("profiles").select("*").eq("id", userId).single();
+    cachedProfile = error ? null : data;
+    return cachedProfile;
+  }
+
+  client.auth.getSession().then(async ({ data }) => {
     cachedUser = data.session?.user || null;
+    if (cachedUser) {
+      const profile = await fetchProfile(cachedUser.id);
+      if (profile?.is_banned) {
+        await client.auth.signOut();
+        cachedUser = null;
+        cachedProfile = null;
+      }
+    }
     ready = true;
     readyResolve();
   });
 
-  client.auth.onAuthStateChange((_event, session) => {
+  client.auth.onAuthStateChange(async (_event, session) => {
     cachedUser = session?.user || null;
+    if (cachedUser) await fetchProfile(cachedUser.id);
+    else cachedProfile = null;
   });
 
   function getCachedUser() {
     return cachedUser;
+  }
+
+  function getCachedProfile() {
+    return cachedProfile;
+  }
+
+  function getRole() {
+    return cachedProfile?.role || "user";
+  }
+
+  function isStaff() {
+    return getRole() === "admin" || getRole() === "moderator";
+  }
+
+  function isAdmin() {
+    return getRole() === "admin";
   }
 
   function isReady() {
@@ -84,6 +121,20 @@ const AuthApp = (function () {
       }
 
       cachedUser = data.user;
+      const profile = await fetchProfile(data.user.id);
+
+      if (profile?.is_banned) {
+        await client.auth.signOut();
+        cachedUser = null;
+        cachedProfile = null;
+        errBox.textContent = profile.banned_reason
+          ? `Akun kamu dibanned. Alasan: ${profile.banned_reason}`
+          : "Akun kamu dibanned dan tidak bisa digunakan.";
+        btn.disabled = false;
+        btn.textContent = "Masuk";
+        return;
+      }
+
       if (window.onAuthSuccess) window.onAuthSuccess();
     });
   }
@@ -154,6 +205,7 @@ const AuthApp = (function () {
   async function logout() {
     await client.auth.signOut();
     cachedUser = null;
+    cachedProfile = null;
   }
 
   return {
@@ -161,6 +213,10 @@ const AuthApp = (function () {
     renderRegister,
     logout,
     getCachedUser,
+    getCachedProfile,
+    getRole,
+    isStaff,
+    isAdmin,
     isReady,
     waitUntilReady,
   };
