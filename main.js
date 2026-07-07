@@ -90,6 +90,7 @@ async function renderProfile() {
   const username = profileRow?.username || user.email.split("@")[0];
   const level = profileRow?.level ?? 1;
   const exp = profileRow?.exp ?? 0;
+  const hasUnlimited = profileRow?.has_unlimited || false;
   const expNeeded = level * 100;
   const expPct = Math.min(100, Math.round((exp / expNeeded) * 100));
 
@@ -97,7 +98,7 @@ async function renderProfile() {
     <div class="profile-header">
       <div class="profile-avatar"><img src="assets/logo.jpg" alt="Rakku" /></div>
       <div>
-        <div class="profile-name">${username}</div>
+        <div class="profile-name">${username}${hasUnlimited ? ` <span class="unlimited-icon" title="Unlimited">&#8734;</span>` : ""}</div>
         <div class="profile-sub">${user.email}</div>
       </div>
     </div>

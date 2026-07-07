@@ -35,6 +35,7 @@ const ChatApp = (function () {
       <div class="chat-msg ${isMine ? "chat-msg-mine" : ""}" data-id="${m.id}">
         <div class="chat-msg-head">
           <span class="chat-msg-name">${escapeHtml(m.username || "User")}</span>
+          ${m.is_unlimited ? `<span class="unlimited-icon" title="Unlimited">&#8734;</span>` : ""}
           ${roleBadge(m.role)}
           <span class="chat-msg-time">${formatTime(m.created_at)}</span>
           ${canDelete ? `<button class="chat-msg-delete" data-action="delete" title="Hapus pesan">&times;</button>` : ""}

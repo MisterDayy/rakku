@@ -70,7 +70,7 @@ const AdminApp = (function () {
         (u) => `
       <div class="admin-user-row" data-id="${u.id}">
         <div class="admin-user-info">
-          <div class="admin-user-name">${escapeHtml(u.username || "(tanpa nama)")}</div>
+          <div class="admin-user-name">${escapeHtml(u.username || "(tanpa nama)")}${u.has_unlimited ? ` <span class="unlimited-icon" title="Unlimited">&#8734;</span>` : ""}</div>
           <div class="admin-user-sub">Lv.${u.level} &middot; ${u.exp} EXP</div>
         </div>
         <div class="admin-user-badges">
@@ -140,6 +140,14 @@ const AdminApp = (function () {
         <input type="number" id="expInput" class="admin-number-input" placeholder="Jumlah EXP (bisa negatif)" />
         <button class="admin-btn" id="addExpBtn">Tambahkan</button>
       </div>
+
+      <div class="section-title"><span class="st-bar"></span>Status Unlimited &#8734;</div>
+      <div class="admin-action-card">
+        <button class="admin-btn ${u.has_unlimited ? "admin-btn-danger" : ""}" id="toggleUnlimitedBtn">
+          ${u.has_unlimited ? "Matikan Unlimited" : "Aktifkan Unlimited"}
+        </button>
+      </div>
+      <p class="admin-note">Kalau aktif, ikon &#8734; muncul di sebelah nama user ini di Chat Global dan halaman Profil-nya.</p>
       ` : ""}
 
       <div class="section-title"><span class="st-bar"></span>${u.is_banned ? "Unban User" : "Ban User"}</div>
@@ -216,6 +224,19 @@ const AdminApp = (function () {
         addExpBtn.disabled = false;
         if (error) return showMsg("Gagal nambah EXP: " + error.message, true);
         showMsg("EXP berhasil ditambahkan.");
+        renderAdminUserDetail(userId, backQuery);
+      });
+    }
+
+    const toggleUnlimitedBtn = document.getElementById("toggleUnlimitedBtn");
+    if (toggleUnlimitedBtn) {
+      toggleUnlimitedBtn.addEventListener("click", async () => {
+        const newStatus = !u.has_unlimited;
+        toggleUnlimitedBtn.disabled = true;
+        const { error } = await client.rpc("admin_set_unlimited", { target_id: u.id, enabled: newStatus });
+        toggleUnlimitedBtn.disabled = false;
+        if (error) return showMsg("Gagal ubah status unlimited: " + error.message, true);
+        showMsg(newStatus ? "Unlimited diaktifkan." : "Unlimited dimatikan.");
         renderAdminUserDetail(userId, backQuery);
       });
     }

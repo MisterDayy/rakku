@@ -1086,6 +1086,13 @@ h1, h2, .brand-text, .section-title {
 .admin-badge-user { color: var(--paper-dim); }
 .admin-badge-banned { color: #e2685a; border-color: rgba(226, 104, 90, 0.4); }
 
+.unlimited-icon {
+  color: var(--gold);
+  font-size: 15px;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(201, 162, 75, 0.6);
+}
+
 .admin-detail-card {
   background: var(--panel);
   border: 1px solid var(--line);
