@@ -21,9 +21,16 @@ const ChatApp = (function () {
     return "";
   }
 
-  function msgHTML(m, myId, canDeleteAny) {
+  function canDeleteMsg(m, myId, isAdmin, isMod) {
+    if (m.user_id === myId) return true;
+    if (isAdmin) return true;
+    if (isMod) return (m.role || "user") === "user";
+    return false;
+  }
+
+  function msgHTML(m, myId, isAdmin, isMod) {
     const isMine = m.user_id === myId;
-    const canDelete = isMine || canDeleteAny;
+    const canDelete = canDeleteMsg(m, myId, isAdmin, isMod);
     return `
       <div class="chat-msg ${isMine ? "chat-msg-mine" : ""}" data-id="${m.id}">
         <div class="chat-msg-head">
@@ -52,14 +59,14 @@ const ChatApp = (function () {
     return window.innerHeight + window.scrollY >= document.body.scrollHeight - 120;
   }
 
-  function appendMessage(m, myId, canDeleteAny) {
+  function appendMessage(m, myId, isAdmin, isMod) {
     if (loadedIds.has(m.id)) return;
     loadedIds.add(m.id);
     const wrap = document.getElementById("chatMessages");
     if (!wrap) return;
     const wasNearBottom = isNearBottom();
     wrap.querySelector(".empty-state")?.remove();
-    wrap.insertAdjacentHTML("beforeend", msgHTML(m, myId, canDeleteAny));
+    wrap.insertAdjacentHTML("beforeend", msgHTML(m, myId, isAdmin, isMod));
     wireDeleteButton(wrap.lastElementChild);
     if (wasNearBottom) window.scrollTo(0, document.body.scrollHeight);
   }
@@ -70,12 +77,12 @@ const ChatApp = (function () {
     if (el) el.remove();
   }
 
-  function subscribeRealtime(myId, canDeleteAny) {
+  function subscribeRealtime(myId, isAdmin, isMod) {
     unsubscribeRealtime();
     channel = client
       .channel("public:global_chat_messages")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "global_chat_messages" }, (payload) => {
-        appendMessage(payload.new, myId, canDeleteAny);
+        appendMessage(payload.new, myId, isAdmin, isMod);
       })
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "global_chat_messages" }, (payload) => {
         removeMessage(payload.old.id);
@@ -101,7 +108,8 @@ const ChatApp = (function () {
       return;
     }
 
-    const canDeleteAny = AuthApp.isStaff();
+    const isAdmin = AuthApp.isAdmin();
+    const isMod = AuthApp.isStaff() && !isAdmin;
 
     app.innerHTML = `
       <div class="back-btn" id="chatBack">&larr; Kembali</div>
@@ -135,7 +143,7 @@ const ChatApp = (function () {
 
     const messages = (data || []).slice().reverse();
     wrap.innerHTML = messages.length
-      ? messages.map((m) => msgHTML(m, user.id, canDeleteAny)).join("")
+      ? messages.map((m) => msgHTML(m, user.id, isAdmin, isMod)).join("")
       : `<div class="empty-state">Belum ada obrolan. Jadilah yang pertama!</div>`;
 
     messages.forEach((m) => loadedIds.add(m.id));
@@ -143,7 +151,7 @@ const ChatApp = (function () {
 
     window.scrollTo(0, document.body.scrollHeight);
 
-    subscribeRealtime(user.id, canDeleteAny);
+    subscribeRealtime(user.id, isAdmin, isMod);
 
     const input = document.getElementById("chatInput");
     const sendBtn = document.getElementById("chatSendBtn");
