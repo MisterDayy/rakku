@@ -1,7 +1,5 @@
 const BASE = "https://www.sankavollerei.com/anime/animasu";
 
-// Digabung jadi satu function biar gak kena limit 12 Serverless Functions
-// di Vercel Hobby plan. Routing berdasarkan query "type".
 const TYPE_PATH = {
   home: "home",
   ongoing: "ongoing",

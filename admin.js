@@ -22,7 +22,6 @@ const AdminApp = (function () {
     return true;
   }
 
-  // ===== List halaman utama admin =====
   async function renderAdminPanel(searchQuery) {
     if (window.setBottomNavActive) window.setBottomNavActive("");
     if (!AuthApp.isReady()) {
@@ -86,7 +85,6 @@ const AdminApp = (function () {
     });
   }
 
-  // ===== Detail 1 user =====
   async function renderAdminUserDetail(userId, backQuery) {
     if (!guard()) return;
 
@@ -102,7 +100,6 @@ const AdminApp = (function () {
     const me = AuthApp.getCachedUser();
     const isSelf = me && me.id === u.id;
     const iAmAdmin = AuthApp.isAdmin();
-    // moderator gak boleh ban/unban sesama staff (admin/moderator) — dicek juga di server (RPC)
     const canModerateBan = iAmAdmin || u.role === "user";
 
     app.innerHTML = `

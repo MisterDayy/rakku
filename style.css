@@ -449,7 +449,6 @@ h1, h2, .brand-text, .section-title {
 .chapter-item .cname { font-weight: 600; font-size: 13.5px; }
 .chapter-item .cdate { font-size: 11.5px; color: var(--paper-dim); }
 
-/* ===== Detail Anime (redesain) ===== */
 .detail-page {
   display: flex;
   flex-direction: column;
@@ -736,7 +735,6 @@ h1, h2, .brand-text, .section-title {
 .hist-title { font-size: 14px; font-weight: 700; }
 .hist-chapter { font-size: 12px; color: var(--paper-dim); }
 
-/* ===== Profile Page ===== */
 .profile-header {
   display: flex;
   align-items: center;
@@ -819,7 +817,6 @@ h1, h2, .brand-text, .section-title {
   color: #e2685a;
 }
 
-/* ===== Level / EXP ===== */
 .level-card {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -846,7 +843,6 @@ h1, h2, .brand-text, .section-title {
   background: var(--gold);
 }
 
-/* ===== Bookmark button (detail page) ===== */
 .detail-title-row {
   display: flex;
   align-items: flex-start;
@@ -889,7 +885,6 @@ h1, h2, .brand-text, .section-title {
 }
 .bm-remove:hover { color: #e2685a; }
 
-/* ===== Admin Panel ===== */
 .profile-menu-item.admin {
   color: var(--gold);
   border-color: rgba(201, 162, 75, 0.35);
@@ -949,7 +944,6 @@ h1, h2, .brand-text, .section-title {
   white-space: nowrap;
 }
 
-/* ===== Chat Global ===== */
 .chat-messages {
   display: flex;
   flex-direction: column;
@@ -1165,7 +1159,6 @@ h1, h2, .brand-text, .section-title {
 .admin-msg-ok { color: var(--moss); }
 .admin-msg-error { color: #e2685a; }
 
-/* ===== Auth (Login/Register) ===== */
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -1223,7 +1216,6 @@ h1, h2, .brand-text, .section-title {
   margin-bottom: 18px;
 }
 
-/* ===== Splash Screen ===== */
 .splash-screen {
   position: fixed;
   inset: 0;
@@ -1248,7 +1240,6 @@ h1, h2, .brand-text, .section-title {
   box-shadow: 0 0 50px rgba(155, 89, 208, 0.55), 0 0 100px rgba(155, 89, 208, 0.25);
 }
 
-/* ===== EXP Toast ===== */
 .exp-toast {
   position: fixed;
   left: 50%;
@@ -1276,7 +1267,6 @@ h1, h2, .brand-text, .section-title {
   .bottom-nav { max-width: 480px; left: 50%; transform: translateX(-50%); border-radius: 20px 20px 0 0; }
 }
 
-/* ===== Anime Player Styles ===== */
 .server-select {
   display: flex;
   align-items: center;
@@ -1315,7 +1305,6 @@ h1, h2, .brand-text, .section-title {
   border: 0;
 }
 
-/* ===== Hamburger & Side Menu ===== */
 .hamburger-btn {
   background: transparent;
   border: none;
@@ -1456,7 +1445,6 @@ h1, h2, .brand-text, .section-title {
   border-right: 3px solid var(--gold);
 }
 
-/* ===== Manga Home Carousel ===== */
 .carousel {
   position: relative;
   border-radius: 14px;

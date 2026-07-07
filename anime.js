@@ -115,7 +115,6 @@ const AnimeApp = (function () {
     return true;
   }
 
-  // Genre yang tidak ingin ditampilkan/diakses di aplikasi ini.
   const BLOCKED_GENRES = ["ecchi"];
 
   function isBlockedGenreName(name) {
@@ -127,8 +126,6 @@ const AnimeApp = (function () {
     return (genres || []).some((g) => isBlockedGenreName(g?.name || g));
   }
 
-  // Beberapa endpoint anime punya bentuk response yang tidak seragam,
-  // jadi kita coba beberapa nama field yang umum sebelum fallback ke array pertama yang ketemu.
   function extractArray(json, keys) {
     for (const k of keys) {
       if (Array.isArray(json?.[k])) return json[k];
@@ -147,7 +144,6 @@ const AnimeApp = (function () {
     carouselInterval = null;
   }
 
-  // ===== EXP nonton: per episode dibuka + per menit ditonton =====
   const EXP_PER_EPISODE_OPEN = 10;
   const EXP_PER_MINUTE = 2;
   const EXP_MAX_MINUTES_PER_SESSION = 10;

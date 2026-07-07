@@ -1,4 +1,3 @@
-// Manga endpoints (proxy ke API Komiku lewat backend sendiri)
 const ENDPOINTS = {
   home: `/api/manga/home`,
   info: (url) => `/api/manga/info?url=${encodeURIComponent(url)}`,
@@ -6,10 +5,6 @@ const ENDPOINTS = {
   search: (q) => `/api/manga/search?q=${encodeURIComponent(q)}`,
 };
 
-// Anime endpoints (proxy ke API Sanka/Animasu lewat backend sendiri)
-// Catatan: home/ongoing/completed/movies/latest/schedule digabung jadi satu
-// serverless function (api/anime/home.js) via query "type", biar gak kena
-// limit 12 Serverless Functions di Vercel Hobby plan.
 const ANIME_ENDPOINTS = {
   home: (page) => `/api/anime/home${page ? `?page=${page}` : ""}`,
   search: (q) => `/api/anime/search?q=${encodeURIComponent(q)}`,

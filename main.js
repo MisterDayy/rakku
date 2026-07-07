@@ -22,7 +22,6 @@ const BOTTOM_NAV_CONFIG = {
   ],
 };
 
-// ===== Auth gate =====
 let pendingAction = null;
 
 async function requireAuth(action) {
@@ -47,7 +46,6 @@ window.onAuthSuccess = function () {
   else renderProfile();
 };
 
-// ===== Navigasi lintas mode (dipakai dari daftar bookmark) =====
 function setMode(mode) {
   currentMode = mode;
   document.querySelectorAll(".side-menu-item").forEach((b) => b.classList.toggle("active", b.dataset.mode === mode));
@@ -281,7 +279,6 @@ document.getElementById("chatMenuBtn").addEventListener("click", () => {
   requireAuth(() => ChatApp.renderChat());
 });
 
-// ===== Dropdown "Nonton Anime": toggle buka/tutup, sub-item baru pindah mode =====
 const animeMenuToggle = document.getElementById("animeMenuToggle");
 const animeSubMenu = document.getElementById("animeSubMenu");
 
@@ -314,7 +311,6 @@ document.getElementById("searchInput").addEventListener("keydown", (e) => {
   }
 });
 
-// ===== Search box: icon dulu, expand jadi input pas diklik =====
 const searchBox = document.getElementById("searchBox");
 const searchIconBtn = document.getElementById("searchIconBtn");
 const searchInput = document.getElementById("searchInput");
@@ -335,7 +331,6 @@ searchIconBtn.addEventListener("click", () => {
 });
 
 searchInput.addEventListener("blur", () => {
-  // delay dikit biar klik tombol icon-nya sendiri gak keburu nutup
   setTimeout(() => {
     if (!searchInput.value.trim()) {
       searchBox.classList.remove("expanded");
@@ -343,6 +338,5 @@ searchInput.addEventListener("blur", () => {
   }, 150);
 });
 
-// Init
 renderBottomNav();
 MangaApp.renderHome();
