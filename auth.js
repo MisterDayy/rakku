@@ -8,6 +8,9 @@ const AuthApp = (function () {
   let readyResolve;
   const readyPromise = new Promise((res) => { readyResolve = res; });
 
+  let banChannel = null;
+  let forcingLogout = false;
+
   async function fetchProfile(userId) {
     if (!userId) {
       cachedProfile = null;
@@ -18,6 +21,41 @@ const AuthApp = (function () {
     return cachedProfile;
   }
 
+  function stopBanWatcher() {
+    if (banChannel) {
+      client.removeChannel(banChannel);
+      banChannel = null;
+    }
+  }
+
+  function startBanWatcher(userId) {
+    stopBanWatcher();
+    if (!userId) return;
+    banChannel = client
+      .channel(`profile-ban-watch:${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${userId}` },
+        (payload) => {
+          if (payload.new?.is_banned) {
+            forceBanLogout(payload.new.banned_reason);
+          }
+        }
+      )
+      .subscribe();
+  }
+
+  async function forceBanLogout(reason) {
+    if (forcingLogout) return;
+    forcingLogout = true;
+    stopBanWatcher();
+    await client.auth.signOut();
+    cachedUser = null;
+    cachedProfile = null;
+    alert(reason ? `Akun kamu telah dibanned. Alasan: ${reason}` : "Akun kamu telah dibanned dan tidak bisa digunakan.");
+    window.location.reload();
+  }
+
   client.auth.getSession().then(async ({ data }) => {
     cachedUser = data.session?.user || null;
     if (cachedUser) {
@@ -26,6 +64,8 @@ const AuthApp = (function () {
         await client.auth.signOut();
         cachedUser = null;
         cachedProfile = null;
+      } else {
+        startBanWatcher(cachedUser.id);
       }
     }
     ready = true;
@@ -34,8 +74,13 @@ const AuthApp = (function () {
 
   client.auth.onAuthStateChange(async (_event, session) => {
     cachedUser = session?.user || null;
-    if (cachedUser) await fetchProfile(cachedUser.id);
-    else cachedProfile = null;
+    if (cachedUser) {
+      await fetchProfile(cachedUser.id);
+      startBanWatcher(cachedUser.id);
+    } else {
+      cachedProfile = null;
+      stopBanWatcher();
+    }
   });
 
   function getCachedUser() {
@@ -203,6 +248,7 @@ const AuthApp = (function () {
   }
 
   async function logout() {
+    stopBanWatcher();
     await client.auth.signOut();
     cachedUser = null;
     cachedProfile = null;
