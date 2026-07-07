@@ -271,8 +271,13 @@ document.getElementById("hamburgerBtn").addEventListener("click", () => {
 
 document.getElementById("sideMenuOverlay").addEventListener("click", closeSideMenu);
 
-document.querySelectorAll(".side-menu-item:not(.side-menu-parent)").forEach((btn) => {
+document.querySelectorAll(".side-menu-item[data-mode]:not(.side-menu-parent)").forEach((btn) => {
   btn.addEventListener("click", () => switchMode(btn.dataset.mode));
+});
+
+document.getElementById("chatMenuBtn").addEventListener("click", () => {
+  closeSideMenu();
+  requireAuth(() => ChatApp.renderChat());
 });
 
 // ===== Dropdown "Nonton Anime": toggle buka/tutup, sub-item baru pindah mode =====

@@ -102,6 +102,8 @@ const AdminApp = (function () {
     const me = AuthApp.getCachedUser();
     const isSelf = me && me.id === u.id;
     const iAmAdmin = AuthApp.isAdmin();
+    // moderator gak boleh ban/unban sesama staff (admin/moderator) — dicek juga di server (RPC)
+    const canModerateBan = iAmAdmin || u.role === "user";
 
     app.innerHTML = `
       <div class="back-btn" id="adminDetailBack">&larr; Kembali ke Daftar</div>
@@ -130,6 +132,7 @@ const AdminApp = (function () {
       <div class="admin-action-card">
         <input type="number" id="levelInput" class="admin-number-input" min="1" value="${u.level}" />
         <button class="admin-btn" id="saveLevelBtn">Simpan Level</button>
+        <button class="admin-btn admin-btn-danger" id="resetLevelBtn">Reset ke 1</button>
       </div>
 
       <div class="section-title"><span class="st-bar"></span>Tambah EXP</div>
@@ -141,7 +144,9 @@ const AdminApp = (function () {
 
       <div class="section-title"><span class="st-bar"></span>${u.is_banned ? "Unban User" : "Ban User"}</div>
       <div class="admin-action-card admin-action-card-col">
-        ${u.is_banned
+        ${!canModerateBan
+          ? `<p class="admin-note">Moderator tidak bisa ban/unban sesama staff (admin/moderator).</p>`
+          : u.is_banned
           ? `<button class="admin-btn admin-btn-danger" id="unbanBtn" ${isSelf ? "disabled" : ""}>Unban User Ini</button>`
           : `
             <textarea id="banReasonInput" class="admin-textarea" placeholder="Alasan ban (opsional)"></textarea>
@@ -184,6 +189,19 @@ const AdminApp = (function () {
         saveLevelBtn.disabled = false;
         if (error) return showMsg("Gagal ubah level: " + error.message, true);
         showMsg("Level berhasil diubah.");
+        renderAdminUserDetail(userId, backQuery);
+      });
+    }
+
+    const resetLevelBtn = document.getElementById("resetLevelBtn");
+    if (resetLevelBtn) {
+      resetLevelBtn.addEventListener("click", async () => {
+        if (!confirm(`Reset level "${u.username}" ke 1?`)) return;
+        resetLevelBtn.disabled = true;
+        const { error } = await client.rpc("admin_set_level", { target_id: u.id, new_level: 1 });
+        resetLevelBtn.disabled = false;
+        if (error) return showMsg("Gagal reset level: " + error.message, true);
+        showMsg("Level berhasil di-reset ke 1.");
         renderAdminUserDetail(userId, backQuery);
       });
     }
