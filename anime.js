@@ -115,17 +115,6 @@ const AnimeApp = (function () {
     return true;
   }
 
-  const BLOCKED_GENRES = ["ecchi"];
-
-  function isBlockedGenreName(name) {
-    const n = (name || "").toLowerCase().trim();
-    return BLOCKED_GENRES.includes(n);
-  }
-
-  function hasBlockedGenre(genres) {
-    return (genres || []).some((g) => isBlockedGenreName(g?.name || g));
-  }
-
   function extractArray(json, keys) {
     for (const k of keys) {
       if (Array.isArray(json?.[k])) return json[k];
@@ -366,7 +355,7 @@ const AnimeApp = (function () {
 
     try {
       const json = await fetchJSON(tab.endpoint(activePage));
-      const data = (json.animes || []).filter((item) => !hasBlockedGenre(item.genres));
+      const data = json.animes || [];
 
       if (!data.length) {
         grid.innerHTML = emptyBlock("Tidak ada data " + tab.label + ".");
@@ -410,8 +399,7 @@ const AnimeApp = (function () {
     try {
       if (!state.genreList.length) {
         const json = await fetchJSON(ANIME_ENDPOINTS.genres());
-        const allGenres = extractArray(json, ["genres", "data", "list"]);
-        state.genreList = allGenres.filter((g) => !isBlockedGenreName(g.name || g.title || g.slug));
+        state.genreList = extractArray(json, ["genres", "data", "list"]);
       }
 
       const bar = document.getElementById("genreBar");
@@ -492,7 +480,7 @@ const AnimeApp = (function () {
 
   function renderJadwalList(dayKey) {
     const schedule = state.jadwalData || {};
-    const items = (schedule[dayKey] || []).filter((item) => !hasBlockedGenre(item.genres));
+    const items = schedule[dayKey] || [];
     const listWrap = document.getElementById("jadwalList");
     if (!listWrap) return;
 
@@ -660,13 +648,6 @@ const AnimeApp = (function () {
       const d = json.detail;
 
       const genres = d.genres || [];
-
-      if (hasBlockedGenre(genres)) {
-        state.detailData = null;
-        app.innerHTML = `<div class="back-btn" id="backBtn">&larr; Kembali</div>${emptyBlock("Konten ini tidak tersedia di aplikasi.")}`;
-        document.getElementById("backBtn").addEventListener("click", () => renderHome());
-        return;
-      }
 
       state.detailData = d;
 
@@ -922,13 +903,6 @@ const AnimeApp = (function () {
     try {
       const json = await fetchJSON(ANIME_ENDPOINTS.detail(slug));
       const d = json.detail;
-
-      if (hasBlockedGenre(d.genres)) {
-        state.detailData = null;
-        app.innerHTML = `<div class="back-btn" id="backBtn">&larr; Kembali</div>${emptyBlock("Konten ini tidak tersedia di aplikasi.")}`;
-        document.getElementById("backBtn").addEventListener("click", () => renderHome());
-        return;
-      }
 
       state.detailData = d;
       openPlayer(episodeSlug, episodeName);
