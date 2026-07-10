@@ -894,7 +894,6 @@ h1, h2, .brand-text, .section-title {
   color: var(--gold);
 }
 
-<<<<<<< HEAD
 .profile-menu-item.wa-group {
   display: flex;
   align-items: center;
@@ -928,8 +927,6 @@ h1, h2, .brand-text, .section-title {
   font-weight: 600;
 }
 
-=======
->>>>>>> 3bf794636ef1d07bd234696b03709af67b14c9b2
 .admin-search-input {
   width: 100%;
   background: var(--panel);
