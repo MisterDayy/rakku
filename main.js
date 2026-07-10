@@ -118,13 +118,39 @@ async function renderProfile() {
       <button class="profile-menu-item" id="clearMangaHist">Hapus Riwayat Baca Manga</button>
       <button class="profile-menu-item" id="clearAnimeHist">Hapus Riwayat Tonton Anime</button>
       ${AuthApp.isStaff() ? `<button class="profile-menu-item admin" id="goAdminPanel">Panel Admin</button>` : ""}
+<<<<<<< HEAD
+      <button class="profile-menu-item wa-group" id="joinWaGroup">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.001 2c-5.514 0-9.988 4.475-9.988 9.99 0 1.76.462 3.484 1.34 5.003L2 22l5.126-1.342a9.958 9.958 0 0 0 4.875 1.242h.004c5.514 0 9.988-4.475 9.988-9.99 0-2.669-1.038-5.176-2.925-7.062A9.935 9.935 0 0 0 12.001 2zm0 18.184h-.003a8.19 8.19 0 0 1-4.176-1.14l-.3-.178-3.043.797.813-2.968-.196-.305a8.194 8.194 0 0 1-1.257-4.4c0-4.535 3.69-8.223 8.226-8.223 2.197 0 4.263.857 5.817 2.412a8.166 8.166 0 0 1 2.408 5.816c0 4.535-3.69 8.19-8.29 8.19z"/></svg>
+        Gabung Grup WhatsApp
+      </button>
+=======
+>>>>>>> 3bf794636ef1d07bd234696b03709af67b14c9b2
       <button class="profile-menu-item danger" id="logoutBtn">Keluar Akun</button>
     </div>
 
     <div class="section-title"><span class="st-bar"></span>Tentang</div>
     <p class="profile-about">Rakku adalah aplikasi untuk baca manga &amp; nonton anime. Gunakan tombol menu di pojok kiri atas untuk berpindah antara mode Baca Manga dan Nonton Anime.</p>
+<<<<<<< HEAD
+
+    <div class="section-title"><span class="st-bar"></span>Developer</div>
+    <div class="developer-list">
+      <span class="developer-chip">Clara</span>
+      <span class="developer-chip">Man</span>
+      <span class="developer-chip">Ilmi</span>
+    </div>
   `;
 
+  const joinWaGroup = document.getElementById("joinWaGroup");
+  if (joinWaGroup) {
+    joinWaGroup.addEventListener("click", () => {
+      window.open("https://chat.whatsapp.com/HfvJMI5PlazEFjyWgaIyFR", "_blank");
+    });
+  }
+
+=======
+  `;
+
+>>>>>>> 3bf794636ef1d07bd234696b03709af67b14c9b2
   document.getElementById("viewBookmarks").addEventListener("click", () => renderBookmarkList());
 
   const goAdminPanel = document.getElementById("goAdminPanel");

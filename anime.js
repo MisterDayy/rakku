@@ -115,6 +115,20 @@ const AnimeApp = (function () {
     return true;
   }
 
+<<<<<<< HEAD
+  const BLOCKED_GENRES = ["ecchi"];
+
+  function isBlockedGenreName(name) {
+    const n = (name || "").toLowerCase().trim();
+    return BLOCKED_GENRES.includes(n);
+  }
+
+  function hasBlockedGenre(genres) {
+    return (genres || []).some((g) => isBlockedGenreName(g?.name || g));
+  }
+
+=======
+>>>>>>> 3bf794636ef1d07bd234696b03709af67b14c9b2
   function extractArray(json, keys) {
     for (const k of keys) {
       if (Array.isArray(json?.[k])) return json[k];
@@ -355,7 +369,11 @@ const AnimeApp = (function () {
 
     try {
       const json = await fetchJSON(tab.endpoint(activePage));
+<<<<<<< HEAD
+      const data = (json.animes || []).filter((item) => !hasBlockedGenre(item.genres));
+=======
       const data = json.animes || [];
+>>>>>>> 3bf794636ef1d07bd234696b03709af67b14c9b2
 
       if (!data.length) {
         grid.innerHTML = emptyBlock("Tidak ada data " + tab.label + ".");
@@ -399,7 +417,12 @@ const AnimeApp = (function () {
     try {
       if (!state.genreList.length) {
         const json = await fetchJSON(ANIME_ENDPOINTS.genres());
+<<<<<<< HEAD
+        const allGenres = extractArray(json, ["genres", "data", "list"]);
+        state.genreList = allGenres.filter((g) => !isBlockedGenreName(g.name || g.title || g.slug));
+=======
         state.genreList = extractArray(json, ["genres", "data", "list"]);
+>>>>>>> 3bf794636ef1d07bd234696b03709af67b14c9b2
       }
 
       const bar = document.getElementById("genreBar");
@@ -480,7 +503,11 @@ const AnimeApp = (function () {
 
   function renderJadwalList(dayKey) {
     const schedule = state.jadwalData || {};
+<<<<<<< HEAD
+    const items = (schedule[dayKey] || []).filter((item) => !hasBlockedGenre(item.genres));
+=======
     const items = schedule[dayKey] || [];
+>>>>>>> 3bf794636ef1d07bd234696b03709af67b14c9b2
     const listWrap = document.getElementById("jadwalList");
     if (!listWrap) return;
 
@@ -649,6 +676,16 @@ const AnimeApp = (function () {
 
       const genres = d.genres || [];
 
+<<<<<<< HEAD
+      if (hasBlockedGenre(genres)) {
+        state.detailData = null;
+        app.innerHTML = `<div class="back-btn" id="backBtn">&larr; Kembali</div>${emptyBlock("Konten ini tidak tersedia di aplikasi.")}`;
+        document.getElementById("backBtn").addEventListener("click", () => renderHome());
+        return;
+      }
+
+=======
+>>>>>>> 3bf794636ef1d07bd234696b03709af67b14c9b2
       state.detailData = d;
 
       const episodes = d.episodes || [];
@@ -904,6 +941,16 @@ const AnimeApp = (function () {
       const json = await fetchJSON(ANIME_ENDPOINTS.detail(slug));
       const d = json.detail;
 
+<<<<<<< HEAD
+      if (hasBlockedGenre(d.genres)) {
+        state.detailData = null;
+        app.innerHTML = `<div class="back-btn" id="backBtn">&larr; Kembali</div>${emptyBlock("Konten ini tidak tersedia di aplikasi.")}`;
+        document.getElementById("backBtn").addEventListener("click", () => renderHome());
+        return;
+      }
+
+=======
+>>>>>>> 3bf794636ef1d07bd234696b03709af67b14c9b2
       state.detailData = d;
       openPlayer(episodeSlug, episodeName);
     } catch (err) {

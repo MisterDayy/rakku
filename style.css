@@ -894,6 +894,42 @@ h1, h2, .brand-text, .section-title {
   color: var(--gold);
 }
 
+<<<<<<< HEAD
+.profile-menu-item.wa-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #25D366;
+  border-color: rgba(37, 211, 102, 0.35);
+}
+.profile-menu-item.wa-group:hover {
+  border-color: #25D366;
+  color: #25D366;
+}
+.profile-menu-item.wa-group svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.developer-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.developer-chip {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--paper-dim);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+=======
+>>>>>>> 3bf794636ef1d07bd234696b03709af67b14c9b2
 .admin-search-input {
   width: 100%;
   background: var(--panel);
