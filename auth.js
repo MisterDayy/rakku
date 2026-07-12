@@ -236,7 +236,7 @@ const AuthApp = (function () {
       if (!data.session) {
         app.innerHTML = `
           <div class="section-title"><span class="st-bar"></span>Cek Email Kamu</div>
-          <p class="auth-info">Link konfirmasi sudah dikirim ke <b>${email}</b>. Buka email itu dulu, baru login ke aplikasi.</p>
+          <p class="auth-info">Link konfirmasi sudah dikirim ke <b>${escapeHtml(email)}</b>. Buka email itu dulu, baru login ke aplikasi.</p>
           <button class="auth-submit" id="backToLoginBtn" type="button">Kembali ke Login</button>
         `;
         document.getElementById("backToLoginBtn").addEventListener("click", renderLogin);

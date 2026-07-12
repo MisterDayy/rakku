@@ -146,16 +146,16 @@ const MangaApp = (function () {
   }
 
   function cardHTML(item) {
-    const safeTitle = item.title || "Tanpa Judul";
+    const safeTitle = escapeHtml(item.title || "Tanpa Judul");
     return `
       <div class="card" data-href="${encodeURIComponent(item.href)}">
         <div class="card-thumb">
-          <img src="${item.thumb}" alt="${safeTitle}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'" />
-          <span class="card-chapter">${item.lastChapter || ""}</span>
+          <img src="${escapeHtml(item.thumb)}" alt="${safeTitle}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'" />
+          <span class="card-chapter">${escapeHtml(item.lastChapter || "")}</span>
         </div>
         <div class="card-body">
           <div class="card-title">${safeTitle}</div>
-          <div class="card-type">${item.type || ""}</div>
+          <div class="card-type">${escapeHtml(item.type || "")}</div>
         </div>
       </div>
     `;
@@ -171,15 +171,15 @@ const MangaApp = (function () {
   }
 
   function carouselSlideHTML(item) {
-    const safeTitle = item.title || "Tanpa Judul";
+    const safeTitle = escapeHtml(item.title || "Tanpa Judul");
     return `
       <div class="carousel-slide" data-href="${encodeURIComponent(item.href)}">
-        <img src="${item.thumb}" alt="${safeTitle}" onerror="this.src='https://via.placeholder.com/800x450?text=No+Image'" />
+        <img src="${escapeHtml(item.thumb)}" alt="${safeTitle}" onerror="this.src='https://via.placeholder.com/800x450?text=No+Image'" />
         <div class="carousel-overlay">
           <div class="carousel-info">
-            ${item.type ? `<span class="carousel-badge">${item.type}</span>` : ""}
+            ${item.type ? `<span class="carousel-badge">${escapeHtml(item.type)}</span>` : ""}
             <h2>${safeTitle}</h2>
-            <p>${item.lastChapter || ""}</p>
+            <p>${escapeHtml(item.lastChapter || "")}</p>
           </div>
         </div>
       </div>
@@ -327,7 +327,7 @@ const MangaApp = (function () {
       const bar = document.getElementById("genreBar");
       bar.className = "genre-bar";
       bar.innerHTML = state.genreMap
-        .map((g) => `<div class="genre-chip" data-id="${g.mal_id}" data-name="${g.name}">${g.name}</div>`)
+        .map((g) => `<div class="genre-chip" data-id="${g.mal_id}" data-name="${encodeURIComponent(g.name)}">${escapeHtml(g.name)}</div>`)
         .join("");
 
       document.getElementById("genreGrid").innerHTML = emptyBlock("Pilih salah satu genre di atas untuk melihat manga.");
@@ -336,7 +336,7 @@ const MangaApp = (function () {
         chip.addEventListener("click", () => {
           document.querySelectorAll(".genre-chip").forEach((c) => c.classList.remove("active"));
           chip.classList.add("active");
-          loadGenreResults(Number(chip.dataset.id), chip.dataset.name);
+          loadGenreResults(Number(chip.dataset.id), decodeURIComponent(chip.dataset.name));
         });
       });
     } catch (err) {
@@ -352,12 +352,12 @@ const MangaApp = (function () {
     return `
       <div class="card" data-mal-title="${encodeURIComponent(title)}">
         <div class="card-thumb">
-          <img src="${img}" alt="${title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'" />
-          <span class="card-chapter">${status}</span>
+          <img src="${escapeHtml(img)}" alt="${escapeHtml(title)}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'" />
+          <span class="card-chapter">${escapeHtml(status)}</span>
         </div>
         <div class="card-body">
-          <div class="card-title">${title}</div>
-          <div class="card-type">${type}</div>
+          <div class="card-title">${escapeHtml(title)}</div>
+          <div class="card-type">${escapeHtml(type)}</div>
         </div>
       </div>
     `;
@@ -406,7 +406,7 @@ const MangaApp = (function () {
 
     const grid = document.getElementById("genreGrid");
     if (!append) {
-      grid.innerHTML = loadingBlock("Memuat manga genre " + genreName + "...");
+      grid.innerHTML = loadingBlock("Memuat manga genre " + escapeHtml(genreName) + "...");
     }
 
     try {
@@ -419,7 +419,7 @@ const MangaApp = (function () {
       state.genreResults = append ? state.genreResults.concat(data) : data;
 
       if (!state.genreResults.length) {
-        grid.innerHTML = emptyBlock("Tidak ditemukan manga untuk genre " + genreName + ".");
+        grid.innerHTML = emptyBlock("Tidak ditemukan manga untuk genre " + escapeHtml(genreName) + ".");
         return;
       }
 
@@ -441,7 +441,7 @@ const MangaApp = (function () {
           await loadGenreResults(genreId, genreName, true);
         });
       } else {
-        loadMoreWrap.innerHTML = `<span style="color:var(--paper-dim); font-size:12.5px;">Semua manga genre ${genreName} sudah ditampilkan.</span>`;
+        loadMoreWrap.innerHTML = `<span style="color:var(--paper-dim); font-size:12.5px;">Semua manga genre ${escapeHtml(genreName)} sudah ditampilkan.</span>`;
         grid.appendChild(loadMoreWrap);
       }
     } catch (err) {
@@ -468,10 +468,10 @@ const MangaApp = (function () {
       .map(
         (h) => `
       <div class="hist-item" data-href="${encodeURIComponent(h.detailUrl)}" data-chapter-url="${encodeURIComponent(h.chapterUrl || "")}" data-chapter-name="${encodeURIComponent(h.chapterName || "")}">
-        <img src="${h.thumb || ""}" alt="${h.title}" onerror="this.src='https://via.placeholder.com/80x110?text=No+Image'" />
+        <img src="${escapeHtml(h.thumb || "")}" alt="${escapeHtml(h.title)}" onerror="this.src='https://via.placeholder.com/80x110?text=No+Image'" />
         <div class="hist-info">
-          <div class="hist-title">${h.title}</div>
-          <div class="hist-chapter">Terakhir dibaca: ${h.chapterName}</div>
+          <div class="hist-title">${escapeHtml(h.title)}</div>
+          <div class="hist-chapter">Terakhir dibaca: ${escapeHtml(h.chapterName)}</div>
         </div>
       </div>`
       )
@@ -515,7 +515,7 @@ const MangaApp = (function () {
 
     app.innerHTML = `
       <div class="back-btn" id="backHome">&larr; Kembali</div>
-      <div class="section-title"><span class="st-bar"></span>Hasil: "${query}"</div>
+      <div class="section-title"><span class="st-bar"></span>Hasil: "${escapeHtml(query)}"</div>
       <div id="searchGrid">${loadingBlock()}</div>
     `;
     document.getElementById("backHome").addEventListener("click", () => renderHome());
@@ -563,19 +563,19 @@ const MangaApp = (function () {
 
         <div class="detail-page">
           <div class="detail-poster-wrap">
-            <img class="detail-poster" src="${d.thumb}" alt="${d.title}" />
+            <img class="detail-poster" src="${escapeHtml(d.thumb)}" alt="${escapeHtml(d.title)}" />
           </div>
 
-          <h1 class="detail-title">${d.title}</h1>
+          <h1 class="detail-title">${escapeHtml(d.title)}</h1>
 
           <div class="detail-meta-row">
-            <span class="meta-chip">Chapter: ${chapterCount}</span>
-            ${d.status ? `<span class="meta-chip">${d.status}</span>` : ""}
+            <span class="meta-chip">Chapter: ${escapeHtml(String(chapterCount))}</span>
+            ${d.status ? `<span class="meta-chip">${escapeHtml(d.status)}</span>` : ""}
           </div>
 
           ${
             genres.length
-              ? `<div class="genre-tags detail-genre-tags">${genres.map((g) => `<span class="genre-tag">${g}</span>`).join("")}</div>`
+              ? `<div class="genre-tags detail-genre-tags">${genres.map((g) => `<span class="genre-tag">${escapeHtml(g)}</span>`).join("")}</div>`
               : ""
           }
 
@@ -586,7 +586,7 @@ const MangaApp = (function () {
 
           <div class="synopsis-card">
             <div class="synopsis-label">Sinopsis</div>
-            <p class="synopsis" id="synopsisText">${synopsisText}</p>
+            <p class="synopsis" id="synopsisText">${escapeHtml(synopsisText)}</p>
             ${showSynToggle ? `<button class="synopsis-toggle" id="synopsisToggle">Baca selengkapnya</button>` : ""}
           </div>
         </div>
@@ -603,8 +603,8 @@ const MangaApp = (function () {
               <div class="chapter-item-left">
                 <span class="chapter-badge">${chapters.length - i}</span>
                 <div class="chapter-text">
-                  <span class="cname">${ch.name}</span>
-                  ${ch.date ? `<span class="cdate">${ch.date}</span>` : ""}
+                  <span class="cname">${escapeHtml(ch.name)}</span>
+                  ${ch.date ? `<span class="cdate">${escapeHtml(ch.date)}</span>` : ""}
                 </div>
               </div>
               <svg class="chapter-chevron" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M9 6l6 6-6 6"/></svg>
@@ -716,7 +716,7 @@ const MangaApp = (function () {
       app.innerHTML = `
         <div class="back-btn" id="backBtn">&larr; Kembali ke daftar chapter</div>
         <div class="reader-header">
-          <h2>${chapterName}</h2>
+          <h2>${escapeHtml(chapterName)}</h2>
         </div>
         ${navButtonsHTML}
         <div class="reader-images">

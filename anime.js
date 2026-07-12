@@ -202,15 +202,15 @@ const AnimeApp = (function () {
   }
 
   function carouselSlideHTML(item) {
-    const safeTitle = item.title || "Tanpa Judul";
+    const safeTitle = escapeHtml(item.title || "Tanpa Judul");
     return `
       <div class="carousel-slide" data-slug="${encodeURIComponent(item.slug)}">
-        <img src="${item.poster}" alt="${safeTitle}" onerror="this.src='https://via.placeholder.com/800x450?text=No+Image'" />
+        <img src="${escapeHtml(item.poster)}" alt="${safeTitle}" onerror="this.src='https://via.placeholder.com/800x450?text=No+Image'" />
         <div class="carousel-overlay">
           <div class="carousel-info">
-            ${item.type ? `<span class="carousel-badge">${item.type}</span>` : ""}
+            ${item.type ? `<span class="carousel-badge">${escapeHtml(item.type)}</span>` : ""}
             <h2>${safeTitle}</h2>
-            <p>${item.episode || item.status_or_day || ""}</p>
+            <p>${escapeHtml(item.episode || item.status_or_day || "")}</p>
           </div>
         </div>
       </div>
@@ -298,16 +298,16 @@ const AnimeApp = (function () {
   }
 
   function cardHTML(item) {
-    const safeTitle = item.title || "Tanpa Judul";
+    const safeTitle = escapeHtml(item.title || "Tanpa Judul");
     return `
       <div class="card" data-slug="${encodeURIComponent(item.slug)}">
         <div class="card-thumb">
-          <img src="${item.poster}" alt="${safeTitle}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'" />
-          <span class="card-chapter">${item.episode || ""}</span>
+          <img src="${escapeHtml(item.poster)}" alt="${safeTitle}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'" />
+          <span class="card-chapter">${escapeHtml(item.episode || "")}</span>
         </div>
         <div class="card-body">
           <div class="card-title">${safeTitle}</div>
-          <div class="card-type">${item.type || ""} ${item.status_or_day ? "• " + item.status_or_day : ""}</div>
+          <div class="card-type">${escapeHtml(item.type || "")} ${item.status_or_day ? "• " + escapeHtml(item.status_or_day) : ""}</div>
         </div>
       </div>
     `;
@@ -477,11 +477,11 @@ const AnimeApp = (function () {
   }
 
   function jadwalItemHTML(item) {
-    const safeTitle = item.title || "Tanpa Judul";
-    const info = [item.episode, item.status_or_day].filter(Boolean).join(" • ");
+    const safeTitle = escapeHtml(item.title || "Tanpa Judul");
+    const info = escapeHtml([item.episode, item.status_or_day].filter(Boolean).join(" • "));
     return `
       <div class="hist-item" data-slug="${encodeURIComponent(item.slug)}">
-        <img src="${item.poster}" alt="${safeTitle}" onerror="this.src='https://via.placeholder.com/80x110?text=No+Image'" />
+        <img src="${escapeHtml(item.poster)}" alt="${safeTitle}" onerror="this.src='https://via.placeholder.com/80x110?text=No+Image'" />
         <div class="hist-info">
           <div class="hist-title">${safeTitle}</div>
           <div class="hist-chapter">${info || "-"}</div>
@@ -623,7 +623,7 @@ const AnimeApp = (function () {
     setActiveNav("");
     app.innerHTML = `
       <div class="back-btn" id="backHome">&larr; Kembali</div>
-      <div class="section-title"><span class="st-bar"></span>Hasil: "${query}"</div>
+      <div class="section-title"><span class="st-bar"></span>Hasil: "${escapeHtml(query)}"</div>
       <div id="searchGrid">${loadingBlock()}</div>
     `;
     document.getElementById("backHome").addEventListener("click", () => renderHome());
@@ -680,20 +680,20 @@ const AnimeApp = (function () {
 
         <div class="detail-page">
           <div class="detail-poster-wrap">
-            <img class="detail-poster" src="${d.poster}" alt="${d.title}" />
+            <img class="detail-poster" src="${escapeHtml(d.poster)}" alt="${escapeHtml(d.title)}" />
           </div>
 
-          <h1 class="detail-title">${d.title}</h1>
+          <h1 class="detail-title">${escapeHtml(d.title)}</h1>
 
           <div class="detail-meta-row">
-            <span class="meta-chip">${d.status || "-"}</span>
-            <span class="meta-chip">${d.type || "-"}</span>
-            <span class="meta-chip">${d.studio || "-"}</span>
+            <span class="meta-chip">${escapeHtml(d.status || "-")}</span>
+            <span class="meta-chip">${escapeHtml(d.type || "-")}</span>
+            <span class="meta-chip">${escapeHtml(d.studio || "-")}</span>
           </div>
 
           ${
             genres.length
-              ? `<div class="genre-tags detail-genre-tags">${genres.map((g) => `<span class="genre-tag">${g.name}</span>`).join("")}</div>`
+              ? `<div class="genre-tags detail-genre-tags">${genres.map((g) => `<span class="genre-tag">${escapeHtml(g.name)}</span>`).join("")}</div>`
               : ""
           }
 
@@ -704,7 +704,7 @@ const AnimeApp = (function () {
 
           <div class="synopsis-card">
             <div class="synopsis-label">Sinopsis</div>
-            <p class="synopsis" id="synopsisText">${synopsisText}</p>
+            <p class="synopsis" id="synopsisText">${escapeHtml(synopsisText)}</p>
             ${showSynToggle ? `<button class="synopsis-toggle" id="synopsisToggle">Baca selengkapnya</button>` : ""}
           </div>
         </div>
@@ -720,7 +720,7 @@ const AnimeApp = (function () {
             <div class="chapter-item" data-slug="${encodeURIComponent(ep.slug)}">
               <div class="chapter-item-left">
                 <span class="chapter-badge">${episodes.length - i}</span>
-                <span class="cname">${ep.name}</span>
+                <span class="cname">${escapeHtml(ep.name)}</span>
               </div>
               <svg class="chapter-chevron" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M9 6l6 6-6 6"/></svg>
             </div>`
@@ -831,7 +831,7 @@ const AnimeApp = (function () {
 
       app.innerHTML = `
         <div class="back-btn" id="backBtn">&larr; Kembali ke daftar episode</div>
-        <div class="reader-header"><h2>${json.title || episodeName}</h2></div>
+        <div class="reader-header"><h2>${escapeHtml(json.title || episodeName)}</h2></div>
         <div class="server-select">
           <label for="serverPicker">Pilih server:</label>
           <select id="serverPicker">
@@ -888,10 +888,10 @@ const AnimeApp = (function () {
       .map(
         (h) => `
       <div class="hist-item" data-slug="${encodeURIComponent(h.slug)}" data-episode-slug="${encodeURIComponent(h.episodeSlug || "")}" data-episode-name="${encodeURIComponent(h.episodeName || "")}">
-        <img src="${h.poster || ""}" alt="${h.title}" onerror="this.src='https://via.placeholder.com/80x110?text=No+Image'" />
+        <img src="${escapeHtml(h.poster || "")}" alt="${escapeHtml(h.title)}" onerror="this.src='https://via.placeholder.com/80x110?text=No+Image'" />
         <div class="hist-info">
-          <div class="hist-title">${h.title}</div>
-          <div class="hist-chapter">Terakhir ditonton: ${h.episodeName}</div>
+          <div class="hist-title">${escapeHtml(h.title)}</div>
+          <div class="hist-chapter">Terakhir ditonton: ${escapeHtml(h.episodeName)}</div>
         </div>
       </div>`
       )

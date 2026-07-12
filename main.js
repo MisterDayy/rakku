@@ -96,7 +96,7 @@ async function renderProfile() {
     <div class="profile-header">
       <div class="profile-avatar"><img src="assets/logo.jpg" alt="Rakku" /></div>
       <div>
-        <div class="profile-name">${username}${hasUnlimited ? ` <span class="unlimited-icon" title="Unlimited">&#8734;</span>` : ""}</div>
+        <div class="profile-name">${escapeHtml(username)}${hasUnlimited ? ` <span class="unlimited-icon" title="Unlimited">&#8734;</span>` : ""}</div>
         <div class="profile-sub">${user.email}</div>
       </div>
     </div>
@@ -205,9 +205,9 @@ async function renderBookmarkList() {
     .map(
       (b) => `
     <div class="hist-item" data-type="${b.content_type}" data-ref="${encodeURIComponent(b.ref_id)}">
-      <img src="${b.thumb || ""}" alt="${b.title}" onerror="this.src='https://via.placeholder.com/80x110?text=No+Image'" />
+      <img src="${escapeHtml(b.thumb || "")}" alt="${escapeHtml(b.title)}" onerror="this.src='https://via.placeholder.com/80x110?text=No+Image'" />
       <div class="hist-info">
-        <div class="hist-title">${b.title}</div>
+        <div class="hist-title">${escapeHtml(b.title)}</div>
         <div class="hist-chapter">${b.content_type === "manga" ? "Manga" : "Anime"}</div>
       </div>
       <button class="bm-remove" data-id="${b.id}" title="Hapus bookmark">&times;</button>
