@@ -1,4 +1,4 @@
-const API_BASE = "https://api.theresav.biz.id/manga/komiku";
+const API_BASE = "https://api.blckrose.my.id/manga/komiku";
 const API_KEY = process.env.API_KEY || "mykey-111";
 
 module.exports = async (req, res) => {
